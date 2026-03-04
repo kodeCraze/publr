@@ -2,7 +2,6 @@ import { pgEnum } from "drizzle-orm/pg-core";
 
 // Post status enums
 export const postStatusEnum = pgEnum("post_status", [
-  "draft",
   "scheduled",
   "published",
   "failed",

@@ -2,12 +2,9 @@
 import { authClient } from "@/utils/authClient";
 import { trpc } from "@/utils/trpc";
 import { useEffect } from "react";
-import { hello } from "@repo/shared";
 export default function Home() {
   const users = trpc.post.createPost.useMutation();
-const test = trpc.post.testQueueConnection.useQuery();
-const hellodata = hello()
-console.log(hellodata);
+  const test = trpc.post.testQueueConnection.useQuery();
   // const workspace = trpc.workspace.createWorkspace.useMutation();
 
   const chupchapsignupkarle = async () => {
@@ -86,8 +83,8 @@ console.log(hellodata);
     const data = await users.mutateAsync({
       title: "My awesome post",
       content: ["5", "3", "2", "1", "9"], // Array of media IDs from your storage
-      platforms: ["instagram","linkedin","discord"],
-      scheduledAt: new Date(Date.now() ),
+      platforms: ["instagram", "linkedin", "discord"],
+      scheduledAt: new Date(Date.now()),
       platformdata: [
         // Instagram carousel
         {
@@ -101,15 +98,15 @@ console.log(hellodata);
           platform: "linkedin",
           type: "image",
           caption: "Excited to share our latest project update!",
-          fileIds: ["7"]
+          fileIds: ["7"],
         },
         // Discord message
         {
           platform: "discord",
           type: "file",
           caption: "New content just dropped!",
-          fileIds: ["1","7"]
-        }
+          fileIds: ["1", "7"],
+        },
       ],
     });
     console.log(data);

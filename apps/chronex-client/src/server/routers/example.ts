@@ -1,13 +1,12 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "../trpc";
-import {user} from "@/db/schema";
+import { user } from "@repo/db";
 export const exampleRouter = createTRPCRouter({
   hello: publicProcedure
     .input(z.object({ text: z.string() }))
     .query(({ input }) => {
       return {
         greeting: `Hello ${input.text}`,
-        
       };
     }),
 
@@ -16,5 +15,5 @@ export const exampleRouter = createTRPCRouter({
   }),
   getSession: publicProcedure.query(async ({ ctx }) => {
     return ctx.user;
-  })
+  }),
 });

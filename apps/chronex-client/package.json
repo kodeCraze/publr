@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
-    "@repo/shared": "workspace:*",
+    "@repo/db": "workspace:*",
     "@slack/web-api": "^7.14.1",
     "@stz184/backblaze-b2": "^2.0.7",
     "@tanstack/react-query": "^5.90.21",

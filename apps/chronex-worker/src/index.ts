@@ -1,5 +1,5 @@
 /// <reference types="@cloudflare/workers-types" />
-
+import { createDb, workspace } from "@repo/db";
 /**
  * Cloudflare Worker — Queue Consumer
  *
@@ -18,6 +18,7 @@ export interface PlatformJobPayload {
 
 export interface Env {
   ENVIRONMENT: string;
+  DATABASE_URL: string;
   // Add any other environment variables/bindings here
   // e.g., DATABASE_URL, API_KEYS, KV namespaces, etc.
 }
@@ -106,16 +107,24 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === "/health") {
-      return new Response(
-        JSON.stringify({
-          status: "ok",
-          environment: env.ENVIRONMENT,
-          timestamp: new Date().toISOString(),
-        }),
-        {
-          headers: { "Content-Type": "application/json" },
-        },
-      );
+      try {
+        const db = createDb(env.DATABASE_URL);
+        const data = await db.select().from(workspace).limit(1);
+        console.log("Database connection successful:", data);
+        return new Response(
+          JSON.stringify({
+            status: "ok",
+            environment: env.ENVIRONMENT,
+            timestamp: new Date().toISOString(),
+          }),
+          {
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      } catch (error) {
+        console.error("Error in fetch handler:", error);
+        return new Response("Error processing request", { status: 500 });
+      }
     }
 
     return new Response("Chronex Queue Worker", { status: 200 });

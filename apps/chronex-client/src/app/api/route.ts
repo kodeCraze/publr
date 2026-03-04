@@ -1,8 +1,9 @@
-import { main } from "@/db/seed/media";
+import { db } from "@/config/drizzle";
+import { seedMedia } from "@repo/db";
 
 export async function GET() {
-    main().catch((error) => {
-        console.error("Error seeding media:", error);
-    });
+  seedMedia(db).catch((error) => {
+    console.error("Error seeding media:", error);
+  });
   return new Response("Hello, World!");
 }

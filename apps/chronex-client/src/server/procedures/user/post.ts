@@ -2,9 +2,9 @@ import { workspaceProcedure } from "@/server/trpc";
 import { z } from "zod";
 import { b2 } from "@/config/backBlaze";
 import { TRPCError } from "@trpc/server";
-import { post, postMedia } from "@/db/schema/posts";
-import { platformPosts } from "@/db/schema/platform-posts";
-import { NewPostMedia } from "@/db/types";
+import { NewPlatformPost, post, postMedia } from "@repo/db";
+import { platformPosts } from "@repo/db";
+import { NewPostMedia } from "@repo/db";
 import { fileInfo } from "@/types/zod/file";
 import { InputSchema } from "@/types/zod/platform";
 import { getMetaData } from "@/utils/fileFetch";
@@ -118,7 +118,7 @@ export const createPost = workspaceProcedure
         .returning();
 
       // 2. Save platform entries
-      const platformEntries = input.platformdata.map((p) => ({
+      const platformEntries:NewPlatformPost[] = input.platformdata.map((p) => ({
         postId: Post.id,
         platform: p.platform,
         metadata: {

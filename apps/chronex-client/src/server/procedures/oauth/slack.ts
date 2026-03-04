@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import {  NewAuthToken } from "@/db/schema";
-import { authToken } from "@/db/schema/auth-token";
+import { NewAuthToken } from "@repo/db";
+import { authToken } from "@repo/db";
 
 import { workspaceProcedure } from "../../trpc";
 import { slackClient } from "@/config/slackClient";

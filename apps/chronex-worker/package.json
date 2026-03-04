@@ -7,7 +7,8 @@
     "deploy": "wrangler deploy",
     "tail": "wrangler tail"
   },
-  "devDependencies": {"@repo/shared": "workspace:*",
+  "devDependencies": {
+    "@repo/db": "workspace:*",
     "@cloudflare/workers-types": "^4.20241127.0",
     "typescript": "^5.7.2",
     "wrangler": "^3.95.0"

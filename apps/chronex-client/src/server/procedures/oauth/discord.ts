@@ -1,17 +1,14 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import {  NewAuthToken } from "@/db/schema";
-import { authToken } from "@/db/schema/auth-token";
+import { NewAuthToken } from "@repo/db";
+import { authToken } from "@repo/db";
 import { workspaceProcedure } from "../../trpc";
-
-
 
 export const discordOAuthProcedure = workspaceProcedure
   .input(z.object({ guild_id: z.string() }))
   .mutation(async ({ input, ctx }) => {
-    
     const datadb: NewAuthToken = {
-        accessToken:"",
+      accessToken: "",
       profileId: input.guild_id,
       platform: "discord",
       userId: ctx.user.id,

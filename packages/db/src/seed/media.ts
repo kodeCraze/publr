@@ -1,9 +1,8 @@
-import { db } from "@/config/drizzle";
-import { postMedia } from "@/db/schema";
-import { workspace } from "@/db/schema";
-import { user } from "@/db/schema";
+import { DB, postMedia } from "@repo/db";
+import { workspace } from "@repo/db";
+import { user } from "@repo/db";
 
-export async function seedMedia() {
+export async function seedMedia(db:DB) {
   // Fetch one workspace + user to attach media to
   const [existingWorkspace] = await db.select().from(workspace).limit(1);
   const [existingUser] = await db.select().from(user).limit(1);
@@ -186,9 +185,9 @@ export async function seedMedia() {
   console.log("Media seeded successfully.");
 }
 
-export async function main() {
+export async function main(db:DB) {
   try {
-    await seedMedia();
+    await seedMedia(db);
     process.exit(0);
   } catch (err) {
     console.error(err);

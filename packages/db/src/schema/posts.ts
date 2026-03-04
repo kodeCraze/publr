@@ -28,7 +28,7 @@ export const post = pgTable(
 
     refName: text("ref_name").notNull(),
 
-    status: postStatusEnum("status").notNull().default("draft"),
+    status: postStatusEnum("status").notNull().default("scheduled"),
 
     scheduledAt: timestamp("scheduled_at"),
 

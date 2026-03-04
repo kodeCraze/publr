@@ -8,7 +8,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev:web": "pnpm --filter client dev",
     "dev:worker": "pnpm --filter worker dev",
-    "dev": "pnpm -r --parallel dev"
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r --parallel build",
+    "start": "pnpm -r --parallel start"
   },
   "keywords": [],
   "author": "",

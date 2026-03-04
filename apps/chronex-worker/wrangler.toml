@@ -5,8 +5,8 @@ compatibility_date = "2024-01-01"
 # Queue consumer binding
 [[queues.consumers]]
 queue = "chronex-platform-jobs"   # Replace with your actual queue name
-max_batch_size = 10
-max_batch_timeout = 30
+max_batch_size = 1
+max_batch_timeout = 0
 max_retries = 3
 dead_letter_queue = "chronex-dlq" # Optional: for failed messages
 

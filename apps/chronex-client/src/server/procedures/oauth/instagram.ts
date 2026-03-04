@@ -4,8 +4,8 @@ import {
   INSTA_LONG_LIVED_TOKEN_URL,
 } from "@/constants/url";
 import z from "zod";
-import { NewAuthToken } from "@/db/schema";
-import { authToken } from "@/db/schema/auth-token";
+import { NewAuthToken } from "@repo/db";
+import { authToken } from "@repo/db";
 
 import {
   exchangeCodeForShortLivedToken,
@@ -36,7 +36,7 @@ export const instagramOAuthProcedure = workspaceProcedure
       platform: "instagram",
       userId: ctx.user.id,
       workspaceId: ctx.workspaceId,
-      profileId:shortLivedToken.user_id,
+      profileId: shortLivedToken.user_id,
     };
     await ctx.db.insert(authToken).values(datadb);
     return { access_token: longLivedToken.access_token };
