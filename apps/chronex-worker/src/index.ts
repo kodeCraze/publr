@@ -1,5 +1,16 @@
 /// <reference types="@cloudflare/workers-types" />
-import { createDb, workspace } from "@repo/db";
+import {
+  createDb,
+  workspace,
+  platformPosts,
+  post,
+  eq,
+  and,
+  lte,
+  inArray,
+} from "@repo/db";
+import { markFailed } from "./utils/updatePostStatus";
+
 /**
  * Cloudflare Worker — Queue Consumer
  *
@@ -14,86 +25,234 @@ export interface PlatformJobPayload {
   platform: string;
   workspaceId: number;
   scheduledAt: string; // ISO string
+
+  /** Metadata for the platform handler (caption, fileIds, etc.) */
+  metadata?: unknown;
+
+  /**
+   * "create" (default) — first invocation, create the container.
+   * "check_status" — re-enqueued invocation, check if container is ready.
+   */
+  phase?: "create" | "check_status";
+
+  /** IG container ID carried across re-enqueued messages. */
+  containerId?: string;
+
+  /** Carousel child container IDs carried across re-enqueued messages. */
+  childContainerIds?: string[];
 }
 
 export interface Env {
   ENVIRONMENT: string;
   DATABASE_URL: string;
-  // Add any other environment variables/bindings here
-  // e.g., DATABASE_URL, API_KEYS, KV namespaces, etc.
+  DISCORD_BOT_TOKEN: string;
+  CHRONEX_QUEUE_PRODUCER: Queue;
 }
+
+// ─── Imports: Platform handlers ───────────────────────────────────────────────
+
+import {
+  InstagramImage,
+  InstagramReel,
+  InstagramCarousel,
+  InstagramStory,
+} from "./platformHandlers/instagram";
+
+import {
+  LinkedInText,
+  LinkedInImage,
+  LinkedInVideo,
+  LinkedInMultiPost,
+} from "./platformHandlers/linkedin";
+
+import {
+  ThreadsText,
+  ThreadsImage,
+  ThreadsVideo,
+} from "./platformHandlers/threads";
+
+import {
+  DiscordMessage,
+  DiscordEmbed,
+  DiscordFile,
+} from "./platformHandlers/discord";
+
+import { SlackMessage, SlackFile } from "./platformHandlers/slack";
+
+// ─── Handler registry ─────────────────────────────────────────────────────────
+
+type PostHandler = (payload: PlatformJobPayload, env: Env) => Promise<void>;
+
+/**
+ * Map of platform → content type → handler.
+ * The content type is determined by the `metadata.type` field on the job payload
+ * (e.g. "image", "reel", "carousel", "story", "text", "message", "file", etc.).
+ */
+const handlerRegistry: Record<string, Record<string, PostHandler>> = {
+  instagram: {
+    image: InstagramImage,
+    reel: InstagramReel,
+    carousel: InstagramCarousel,
+    story: InstagramStory,
+  },
+  linkedin: {
+    text: LinkedInText,
+    image: LinkedInImage,
+    video: LinkedInVideo,
+    MultiPost: LinkedInMultiPost,
+  },
+  threads: {
+    text: ThreadsText,
+    image: ThreadsImage,
+    video: ThreadsVideo,
+  },
+  discord: {
+    message: DiscordMessage,
+    embed: DiscordEmbed,
+    file: DiscordFile,
+  },
+  slack: {
+    message: SlackMessage,
+    file: SlackFile,
+  },
+};
 
 // ─── Message Handler ──────────────────────────────────────────────────────────
 
 async function processJob(job: PlatformJobPayload, env: Env): Promise<void> {
-  console.log(`Processing job for platform: ${job.platform}`);
-  console.log(
-    `Post ID: ${job.postId}, Platform Post ID: ${job.platformPostId}`,
-  );
-  console.log(`Workspace ID: ${job.workspaceId}`);
-  console.log(`Scheduled at: ${job.scheduledAt}`);
+  const platformHandlers = handlerRegistry[job.platform];
+  if (!platformHandlers) {
+    throw new Error(`Unsupported platform: ${job.platform}`);
+  }
+const platformpost = await createDb(env.DATABASE_URL)
+      .select()
+      .from(platformPosts)
+      .where(eq(platformPosts.id, job.platformPostId))
+      .limit(1)
+      .then((res) => res[0]);
+  const contentType = (platformpost.metadata as { type?: string })?.type ?? "";
+  const handler = platformHandlers[contentType];
+  if (!handler) {
+    throw new Error(
+      `Unsupported content type "${contentType}" for platform "${job.platform}"`,
+    );
+  }
 
-  // TODO: Implement your platform-specific publishing logic here
-  // Example:
-  // switch (job.platform) {
-  //   case 'linkedin':
-  //     await publishToLinkedIn(job, env);
-  //     break;
-  //   case 'instagram':
-  //     await publishToInstagram(job, env);
-  //     break;
-  //   case 'discord':
-  //     await publishToDiscord(job, env);
-  //     break;
-  //   case 'slack':
-  //     await publishToSlack(job, env);
-  //     break;
-  //   case 'threads':
-  //     await publishToThreads(job, env);
-  //     break;
-  //   default:
-  //     throw new Error(`Unsupported platform: ${job.platform}`);
-  // }
-
-  console.log(`Successfully processed job for post ${job.postId}`);
+  await handler(job, env);
 }
 
 // ─── Worker Export ────────────────────────────────────────────────────────────
 
 export default {
   /**
-   * Queue consumer handler
-   * Called when messages are available in the queue
+   * Queue consumer handler.
+   * Each message is processed individually. On unrecoverable errors the
+   * platform post is marked as "failed" in the DB and the message is ack'd
+   * so it doesn't retry endlessly.
    */
   async queue(
     batch: MessageBatch<PlatformJobPayload>,
     env: Env,
     ctx: ExecutionContext,
   ): Promise<void> {
-    console.log(`Received batch of ${batch.messages.length} messages`);
-
     for (const message of batch.messages) {
+      const job = message.body;
       try {
-        const job = message.body;
-
-        // Validate the message payload
-        if (!job.postId || !job.platform || !job.platformPostId) {
-          console.error("Invalid job payload:", job);
-          message.ack(); // Acknowledge to remove from queue
-          continue;
-        }
-
         await processJob(job, env);
-
-        // Acknowledge successful processing
         message.ack();
       } catch (error) {
-        console.error(`Error processing message ${message.id}:`, error);
+        console.error(
+          `Failed to process job postId=${job.postId} platform=${job.platform}:`,
+          error,
+        );
 
-        // Retry the message (will be retried up to max_retries times)
+        // Mark failed in DB so the user sees the error
+        try {
+          const db = createDb(env.DATABASE_URL);
+          const msg = error instanceof Error ? error.message : String(error);
+          await markFailed(db, job.platformPostId, msg);
+        } catch (dbErr) {
+          console.error("Could not update platform post status:", dbErr);
+        }
+
+        // Retry the message (Cloudflare will respect max_retries in wrangler.toml)
         message.retry();
       }
     }
+  },
+
+  /**
+   * Cron trigger — runs every 12 hours.
+   * Queries all "pending" platform posts whose scheduledAt is within the next
+   * 12 hours and enqueues them for processing.
+   */
+  async scheduled(
+    event: ScheduledEvent,
+    env: Env,
+    ctx: ExecutionContext,
+  ): Promise<void> {
+    const db = createDb(env.DATABASE_URL);
+
+    const now = new Date();
+    const horizon = new Date(now.getTime() + 12 * 60 * 60 * 1000); // +12 h
+
+    // Pending platform posts scheduled within the next 12 hours
+    const rows = await db
+      .select({
+        platformPostId: platformPosts.id,
+        postId: platformPosts.postId,
+        platform: platformPosts.platform,
+        scheduledAt: platformPosts.scheduledAt,
+        metadata: platformPosts.metadata,
+      })
+      .from(platformPosts)
+      .innerJoin(post, eq(platformPosts.postId, post.id))
+      .where(
+        and(
+          eq(platformPosts.status, "pending"),
+          lte(platformPosts.scheduledAt, horizon),
+        ),
+      );
+
+    if (rows.length === 0) {
+      console.log("Cron: no posts to enqueue.");
+      return;
+    }
+
+    // Look up workspaceId per post (one query)
+    const postIds = [...new Set(rows.map((r) => r.postId))];
+    const posts = await db
+      .select({ id: post.id, workspaceId: post.workspaceId })
+      .from(post)
+      .where(inArray(post.id, postIds));
+    const workspaceMap = new Map(posts.map((p) => [p.id, p.workspaceId]));
+
+    let enqueued = 0;
+
+    for (const row of rows) {
+      const workspaceId = workspaceMap.get(row.postId);
+      if (!workspaceId) {
+        console.warn(
+          `Cron: no workspace found for postId=${row.postId}, skipping.`,
+        );
+        continue;
+      }
+
+      const payload: PlatformJobPayload = {
+        postId: row.postId,
+        platformPostId: row.platformPostId,
+        platform: row.platform,
+        workspaceId,
+        scheduledAt: row.scheduledAt?.toISOString() ?? new Date().toISOString(),
+        metadata: row.metadata ?? undefined,
+        phase: "create",
+      };
+
+      await env.CHRONEX_QUEUE_PRODUCER.send(payload);
+      enqueued++;
+    }
+
+    console.log(`Cron: enqueued ${enqueued} platform post(s).`);
   },
 
   /**
@@ -105,7 +264,13 @@ export default {
     ctx: ExecutionContext,
   ): Promise<Response> {
     const url = new URL(request.url);
-
+    if (url.pathname === "/test-job") {
+      console.log("Sending test job to queue...");
+      await env.CHRONEX_QUEUE_PRODUCER.send({
+        postId: 123,
+        platformPostId: 456,
+      });
+    }
     if (url.pathname === "/health") {
       try {
         const db = createDb(env.DATABASE_URL);
@@ -125,6 +290,9 @@ export default {
         console.error("Error in fetch handler:", error);
         return new Response("Error processing request", { status: 500 });
       }
+    }
+    else{
+      
     }
 
     return new Response("Chronex Queue Worker", { status: 200 });

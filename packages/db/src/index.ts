@@ -2,3 +2,6 @@
 export * from "./schema";
 export * from "./client";
 export * from "./seed/media";
+
+// Re-export commonly used drizzle-orm operators for consumers
+export { eq, and, or, sql, inArray, lte, gte } from "drizzle-orm";

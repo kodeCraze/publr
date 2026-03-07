@@ -1,12 +1,12 @@
 import {
   createPost,
   getUploadUrl,
-  testQueueConnection,
+  saveMedia,
 } from "../procedures/user/post";
 import { createTRPCRouter } from "../trpc";
 
 export const postRouter = createTRPCRouter({
   getUploadUrl: getUploadUrl,
   createPost: createPost,
-  testQueueConnection: testQueueConnection,
+  saveMedia : saveMedia,
 });

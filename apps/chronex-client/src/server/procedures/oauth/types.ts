@@ -49,9 +49,10 @@ export async function exchangeCodeForShortLivedToken(
   });
 
   if (!res.ok) {
+    const errorBody = await res.text();
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: "Failed to exchange code for token",
+      message: `Failed to exchange code for token: ${errorBody}`,
     });
   }
 
@@ -69,11 +70,12 @@ export async function exchangeForLongLivedToken(
   const res = await fetch(url.toString());
 
   if (!res.ok) {
+    const errorBody = await res.text();
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: "Failed to exchange short-lived token for long-lived token",
+      message: `Failed to exchange short-lived token for long-lived token: ${errorBody}`,
     });
   }
-
+console.log("Long-lived token response:", await res.clone().json());
   return res.json();
 }

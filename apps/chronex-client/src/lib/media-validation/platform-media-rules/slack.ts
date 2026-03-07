@@ -47,6 +47,9 @@ const slackFileItem = z.object({
   aspectRatio: z.string().optional(),
 });
 
+// ─── Aspect Ratio ─────────────────────────────────────────────────────────────
+// Slack: No official aspect ratio restrictions for file uploads.
+
 // ─── Per-type rules ───────────────────────────────────────────────────────────
 
 /** Message with optional file attachments (1–10) */

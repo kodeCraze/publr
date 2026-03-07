@@ -9,11 +9,7 @@ import { fileInfo } from "@/types/zod/file";
 import { InputSchema } from "@/types/zod/platform";
 import { getMetaData } from "@/utils/fileFetch";
 import { validateMediaForPlatform } from "@/lib/media-validation/validator";
-import {
-  queuePlatformJobs,
-  verifyQueueConnection,
-  type PlatformJobPayload,
-} from "@/config/cloudflareQueue";
+import { queuePlatformJob } from "@/config/cloudflareQueue";
 function gcd(a: number, b: number): number {
   return b === 0 ? a : gcd(b, a % b);
 }
@@ -37,7 +33,6 @@ export const getUploadUrl = workspaceProcedure.query(async () => {
 export const saveMedia = workspaceProcedure
   .input(
     z.object({
-      fileid: z.string(),
       contentType: z.enum(["image", "video"]),
       fileId: z.string(),
     }),
@@ -52,7 +47,7 @@ export const saveMedia = workspaceProcedure
       const mediaRecord: NewPostMedia = {
         workspaceId: ctx.workspaceId,
         userId: ctx.user.id,
-        url: input.fileid,
+        url: input.fileId,
         type: typeandExtension[0] as "image" | "video",
         size: info.contentLength,
         height: info.fileInfo.height,
@@ -70,6 +65,7 @@ export const saveMedia = workspaceProcedure
       await ctx.db.insert(postMedia).values(mediaRecord);
       return { success: true };
     } catch (error) {
+      console.log("Error in saveMedia:", error);
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: "Failed to save media",
@@ -92,9 +88,7 @@ export const createPost = workspaceProcedure
         });
       }
 
-      console.log("content", input.content);
       const allids = [...input.content];
-      console.log("allids", allids);
       const metaMap = Object.fromEntries(
         await Promise.all(
           allids.map(async (id) => [id, await getMetaData(id, ctx.db)]),
@@ -118,57 +112,50 @@ export const createPost = workspaceProcedure
         .returning();
 
       // 2. Save platform entries
-      const platformEntries:NewPlatformPost[] = input.platformdata.map((p) => ({
-        postId: Post.id,
-        platform: p.platform,
-        metadata: {
-          type: p.type,
-          caption: "caption" in p ? p.caption : null,
-          description: "description" in p ? p.description : null,
-          hashtags: "hashtags" in p ? p.hashtags : null,
-          title: "title" in p ? p.title : null,
-          fileIds: "fileIds" in p ? p.fileIds : null,
-        },
-        status: "pending" as const,
-        scheduledAt: input.scheduledAt,
-      }));
+      const platformEntries: NewPlatformPost[] = input.platformdata.map(
+        (p) => ({
+          postId: Post.id,
+          platform: p.platform,
+          metadata: {
+            type: p.type,
+            caption: "caption" in p ? p.caption : null,
+            description: "description" in p ? p.description : null,
+            hashtags: "hashtags" in p ? p.hashtags : null,
+            title: "title" in p ? p.title : null,
+            fileIds: "fileIds" in p ? p.fileIds : null,
+          },
+          status: "pending" as const,
+          scheduledAt: input.scheduledAt,
+        }),
+      );
 
       const insertedPlatformPosts = await ctx.db
         .insert(platformPosts)
         .values(platformEntries)
         .returning({ id: platformPosts.id, platform: platformPosts.platform });
 
-      // 3. Push one job per platform entry to Cloudflare Queue
-      // Calculate delay: min 5s, max 12h (43200s). Worker re-queues if still too early.
-      const secondsUntilScheduled = Math.floor(
-        (input.scheduledAt.getTime() - Date.now()) / 1000,
-      );
+      // If scheduledAt is within 12 hours, enqueue now with a delay so the
+      // worker fires at the right moment. Posts further out are left for the
+      // cron job (runs every 12 h) to enqueue when they fall into range.
+      const msUntilScheduled = scheduledMs - nowMs;
+      const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
 
-      // If scheduled in the past or immediate, use minimal delay
-      // If scheduled within 12h, use exact delay
-      // If scheduled beyond 12h, use max delay (worker will re-queue)
-      const delaySeconds = Math.min(
-        Math.max(5, secondsUntilScheduled),
-        43200, // 12 hour max
-      );
+      if (msUntilScheduled < TWELVE_HOURS_MS) {
+        const delaySeconds = Math.max(0, Math.floor(msUntilScheduled / 1000));
 
-      const jobs: PlatformJobPayload[] = insertedPlatformPosts.map((pp) => ({
-        postId: Post.id,
-        platformPostId: pp.id,
-        platform: pp.platform,
-        workspaceId: ctx.workspaceId,
-        scheduledAt: input.scheduledAt.toISOString(),
-      }));
-
-      console.log("[createPost] Queuing jobs", {
-        postId: Post.id,
-        scheduledAt: input.scheduledAt.toISOString(),
-        secondsUntilScheduled,
-        delaySeconds,
-        platformCount: jobs.length,
-      });
-
-      await queuePlatformJobs(jobs, delaySeconds);
+        for (const pp of insertedPlatformPosts) {
+          await queuePlatformJob(
+            {
+              postId: Post.id,
+              platformPostId: pp.id,
+              platform: pp.platform,
+              workspaceId: ctx.workspaceId,
+              scheduledAt: input.scheduledAt.toISOString(),
+            },
+            delaySeconds,
+          );
+        }
+      }
 
       return { postId: Post.id, status: "scheduled" };
     } catch (error) {
@@ -180,17 +167,3 @@ export const createPost = workspaceProcedure
       });
     }
   });
-
-// Debug endpoint to test queue connection
-export const testQueueConnection = workspaceProcedure.query(async () => {
-  try {
-    const result = await verifyQueueConnection();
-    return result;
-  } catch (error) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Queue verification failed",
-      cause: error,
-    });
-  }
-});

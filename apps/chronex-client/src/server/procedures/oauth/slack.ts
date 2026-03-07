@@ -21,7 +21,9 @@ export const slackOAuthProcedure = workspaceProcedure
         code: input.code,
         redirect_uri: redirectUri!,
       });
+      console.log("Slack OAuth token response:", tokenData);
     } catch (error) {
+      console.error("Error exchanging code for token:", error);
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "Failed to exchange code for token",
@@ -29,7 +31,7 @@ export const slackOAuthProcedure = workspaceProcedure
       });
     }
 
-    if (!tokenData.ok || !tokenData.authed_user || !tokenData.access_token) {
+    if (!tokenData.ok || !tokenData.authed_user || !tokenData.authed_user.access_token) {
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "Invalid token response from Slack",
@@ -37,8 +39,8 @@ export const slackOAuthProcedure = workspaceProcedure
     }
 
     const datadb: NewAuthToken = {
-      accessToken: tokenData.access_token,
-      profileId: tokenData.authed_user.id,
+      accessToken: tokenData.authed_user.access_token,
+      profileId: tokenData.team?.id,
       // Slack tokens don't expire by default, so set a far future date or handle accordingly
       platform: "slack",
       userId: ctx.user.id,
@@ -54,5 +56,5 @@ export const slackOAuthProcedure = workspaceProcedure
         cause: error,
       });
     }
-    return { access_token: tokenData.access_token };
+    return { access_token: tokenData.authed_user.access_token };
   });

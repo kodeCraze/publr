@@ -175,41 +175,37 @@ export async function sendToQueue<T = unknown>(
   return data;
 }
 
-export async function queuePlatformJobs(
-  jobs: PlatformJobPayload[],
+export async function queuePlatformJob(
+  job: PlatformJobPayload,
   delaySeconds?: number,
 ): Promise<CloudflareApiResponse> {
-  console.log("[CloudflareQueue] Queuing platform jobs", {
-    jobCount: jobs.length,
+  console.log("[CloudflareQueue] Queuing platform job", {
+    postId: job.postId,
+    platformPostId: job.platformPostId,
+    platform: job.platform,
     delaySeconds: delaySeconds ?? "none",
-    platforms: [...new Set(jobs.map((j) => j.platform))],
-    postIds: [...new Set(jobs.map((j) => j.postId))],
     timestamp: new Date().toISOString(),
   });
 
-  const messages: QueueMessage<PlatformJobPayload>[] = jobs.map((job) => ({
+  const message: QueueMessage<PlatformJobPayload> = {
     body: job,
     content_type: "json",
     ...(delaySeconds != null && delaySeconds > 0
       ? { delay_seconds: Math.min(delaySeconds, 43200) }
       : {}),
-  }));
+  };
 
   try {
-    const result = await sendToQueue(messages);
-    console.log("[CloudflareQueue] Platform jobs queued successfully", {
-      jobCount: jobs.length,
-      platformPostIds: jobs.map((j) => j.platformPostId),
+    const result = await sendToQueue([message]);
+    console.log("[CloudflareQueue] Platform job queued successfully", {
+      platformPostId: job.platformPostId,
     });
     return result;
   } catch (error) {
-    console.error("[CloudflareQueue] Failed to queue platform jobs", {
-      jobCount: jobs.length,
-      jobs: jobs.map((j) => ({
-        postId: j.postId,
-        platformPostId: j.platformPostId,
-        platform: j.platform,
-      })),
+    console.error("[CloudflareQueue] Failed to queue platform job", {
+      postId: job.postId,
+      platformPostId: job.platformPostId,
+      platform: job.platform,
       error: error instanceof Error ? error.message : String(error),
     });
     throw error;

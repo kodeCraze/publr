@@ -4,9 +4,18 @@ import { trpc } from "@/utils/trpc";
 import { useEffect } from "react";
 export default function Home() {
   const users = trpc.post.createPost.useMutation();
-  const test = trpc.post.testQueueConnection.useQuery();
-  // const workspace = trpc.workspace.createWorkspace.useMutation();
-
+  const workspace = trpc.workspace.createWorkspace.useMutation();
+  const oauth  = trpc.oauthRouter.slack.useMutation()
+  const media = trpc.post.saveMedia.useMutation();
+const getUrl = trpc.post.getUploadUrl.useQuery(undefined, {
+  enabled: false,
+  
+});
+useEffect(() => {
+  if (getUrl.data) {
+    console.log("Upload URL:", getUrl.data);
+  }
+}, [getUrl.data]);
   const chupchapsignupkarle = async () => {
     const data = await authClient.signIn.social(
       {
@@ -82,35 +91,33 @@ export default function Home() {
   const createPost = async () => {
     const data = await users.mutateAsync({
       title: "My awesome post",
-      content: ["5", "3", "2", "1", "9"], // Array of media IDs from your storage
-      platforms: ["instagram", "linkedin", "discord"],
-      scheduledAt: new Date(Date.now()),
+      content: ["11"], // Array of media IDs from your storage
+      platforms: ["instagram"],
+      scheduledAt: new Date(Date.now() ),
       platformdata: [
         // Instagram carousel
         {
           platform: "instagram",
           type: "reel",
-          caption: "Check out these amazing photos! 📸",
-          hashtags: ["travel", "photography", "sunset"],
-          fileIds: ["2"],
+          caption: "YO!, currently posting from the official API  #bankai",
+          fileIds: ["11"],
         },
-        {
-          platform: "linkedin",
-          type: "image",
-          caption: "Excited to share our latest project update!",
-          fileIds: ["7"],
-        },
-        // Discord message
-        {
-          platform: "discord",
-          type: "file",
-          caption: "New content just dropped!",
-          fileIds: ["1", "7"],
-        },
+       
       ],
     });
     console.log(data);
   };
+  const oauthfunc = async () => {
+    const data = await oauth.mutateAsync({code:"10490576294546.10653358504737.096ca912018ea0ad9fe53a98a33decc8d9fda6734364f1fc4ddcb5afece7655c"});
+    console.log(data);
+  }
+  const save = async () => {
+    const data = await media.mutateAsync({
+     contentType:"video",
+     fileId:"4_zbf1f4b8f41d7955d97cc051c_f11566d0ffbbeb06e_d20260307_m043706_c005_v0501022_t0028_u01772858226624"
+    });
+    console.log(data);
+  }
   return (
     <>
       <h1>Welcome to Better Auth with Next.js and Drizzle ORM</h1>
@@ -119,12 +126,15 @@ export default function Home() {
       </button>
       <br />
       <button onClick={createPost}>create post</button>
-      {/* <div>{hello.data?.greeting}</div> */}
-      {/* <div onClick={getusers}> click me daddy</div> */}
+
+
       <br />
-      <button>click me to use fetch query</button>
+      {/* <button onClick={()=>workspace.mutate({name:"jo bhi ho"})}>click me to use fetch query</button> */}
       <br />
       {/* <button onClick={()=>fetch("/api")}>click to add users</button> */}
+      <button onClick={save}>click to authenticate with Instagram</button>
+      <br />
+      <button onClick={() => getUrl.refetch()}>click to fetch upload URL</button>
     </>
   );
 }

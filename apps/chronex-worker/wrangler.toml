@@ -1,7 +1,7 @@
 name = "chronex-queue-worker"
 main = "src/index.ts"
 compatibility_date = "2024-01-01"
-
+compatibility_flags = [ "nodejs_compat" ]
 # Queue consumer binding
 [[queues.consumers]]
 queue = "chronex-platform-jobs"   # Replace with your actual queue name
@@ -14,10 +14,21 @@ dead_letter_queue = "chronex-dlq" # Optional: for failed messages
 # CLOUDFLARE_ACCOUNT_ID
 # CLOUDFLARE_API_TOKEN
 
+[[queues.producers]]
+queue = "chronex-platform-jobs"
+binding = "CHRONEX_QUEUE_PRODUCER"
+
+[triggers]
+crons = ["0 */12 * * *"]
+
 [vars]
 ENVIRONMENT = "production"
+DATABASE_URL = "postgresql://postgres.lfisyxaoxxfjsrstdadm:iiW2pjm!i9sqV&Z@aws-1-us-east-2.pooler.supabase.com:6543/postgres"
 
 [observability]
 [observability.logs]
 enabled = true
 invocation_logs = true
+
+
+

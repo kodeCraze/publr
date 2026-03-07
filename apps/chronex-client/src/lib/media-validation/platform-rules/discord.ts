@@ -23,11 +23,6 @@ const multipleFileIds = z
 export const message = z.object({
     platform: z.literal("discord"),
   caption: captionMax2000,
-  fileIds: z
-    .array(z.string())
-    .min(1, "Provide at least 1 attachment when uploading files in a message")
-    .max(10, "Discord supports up to 10 attachments per message")
-    .optional(),
   type: z.literal("message"),
 });
 

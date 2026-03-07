@@ -15,12 +15,13 @@ import {
 export const threadsOAuthProcedure = workspaceProcedure
   .input(z.object({ code: z.string() }))
   .mutation(async ({ input, ctx }) => {
+    const code = input.code.replace(/#_$/, "");
     const shortLivedToken = await exchangeCodeForShortLivedToken({
       url: THREADS_SHORT_LIVED_TOKEN_URL,
       clientId: process.env.NEXT_PUBLIC_THREADS_CLIENT_ID!,
       clientSecret: process.env.THREADS_CLIENT_SECRET!,
       redirectUri: process.env.NEXT_PUBLIC_THREADS_REDIRECT_URI!,
-      code: input.code,
+      code,
     });
 
     const longLivedToken = await exchangeForLongLivedToken({

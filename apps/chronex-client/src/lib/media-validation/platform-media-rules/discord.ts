@@ -18,13 +18,13 @@ const discordFileItem = z.object({
   aspectRatio: z.string().optional(),
 });
 
+// ─── Aspect Ratio ─────────────────────────────────────────────────────────────
+// Discord: No official aspect ratio restrictions for file uploads (free tier).
+
 // ─── Per-type rules ───────────────────────────────────────────────────────────
 
-
-
 /** File-only upload (1–10 files) */
-const file = z
-  .array(discordFileItem)
+const file = z.array(discordFileItem);
 
 // ─── Exported map ─────────────────────────────────────────────────────────────
 export const discord = { file };

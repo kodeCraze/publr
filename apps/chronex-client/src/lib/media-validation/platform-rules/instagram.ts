@@ -6,10 +6,7 @@ const captionMax2200 = z
 const captionMax125 = z
   .string()
   .max(125, "Stories can include up to 125 characters in the caption");
-const hashtagsMax30 = z
-  .array(z.string())
-  .max(30, "You can include up to 30 hashtags")
-  .optional();
+
 const singleMediaId = z
   .array(z.string())
   .length(1, "This format supports exactly 1 media file");
@@ -17,7 +14,6 @@ const singleMediaId = z
 export const image = z.object({
     platform: z.literal("instagram"),
   caption: captionMax2200,
-  hashtags: hashtagsMax30,
   fileIds: singleMediaId,
   type: z.literal("image"),
 });
@@ -25,7 +21,6 @@ export const image = z.object({
 export const reel = z.object({
     platform: z.literal("instagram"),
   caption: captionMax2200,
-  hashtags: hashtagsMax30,
   fileIds: z
     .array(z.string())
     .length(1, "Reels must have exactly 1 media file"),
@@ -35,7 +30,6 @@ export const reel = z.object({
 export const carousel = z.object({
     platform: z.literal("instagram"),
   caption: captionMax2200,
-  hashtags: hashtagsMax30,
   fileIds: z
     .array(z.string())
     .min(2, "Carousels require at least 2 media files")
@@ -46,7 +40,6 @@ export const carousel = z.object({
 export const story = z.object({
     platform: z.literal("instagram"),
   caption: captionMax125,
-  hashtags: hashtagsMax30,
   fileIds: singleMediaId,
   type: z.literal("story"),
 });
