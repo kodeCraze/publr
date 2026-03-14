@@ -6,6 +6,7 @@ import {
   index,
   uniqueIndex,
   integer,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { user } from "./auth";
@@ -25,6 +26,7 @@ export const authToken = pgTable(
       .references(() => workspace.id, { onDelete: "cascade" }),
     platform: platformEnum("platform").notNull(),
     accessToken: text("access_token").notNull(),
+    isRefreshable: boolean("is_refreshable").notNull(),
     refreshToken: text("refresh_token"),
     profileId: text("profile_id"),
     expiresAt: timestamp("expires_at", { mode: "date" }),

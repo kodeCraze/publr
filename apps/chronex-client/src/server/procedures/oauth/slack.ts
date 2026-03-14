@@ -41,10 +41,10 @@ export const slackOAuthProcedure = workspaceProcedure
     const datadb: NewAuthToken = {
       accessToken: tokenData.authed_user.access_token,
       profileId: tokenData.team?.id,
-      // Slack tokens don't expire by default, so set a far future date or handle accordingly
       platform: "slack",
       userId: ctx.user.id,
       workspaceId: ctx.workspaceId,
+      isRefreshable: false,
     };
 
     try {

@@ -94,18 +94,45 @@ useEffect(() => {
     const date = new Date(Date.now() ); // Schedule for 1 hour from now
     const data = await users.mutateAsync({
       title: "My awesome post",
-      content: ["9"], // Array of media IDs from your storage
-      platforms: ["discord"],
+      content: [], // Array of media IDs from your storage
+      platforms: ["slack","instagram","linkedin","threads","discord"],
       scheduledAt: date,
       platformdata: [
-     {
-          platform: "discord",
-          type: "file",
-          caption: "Excited to share our latest project update!",
-          channelId:"1152820878359404664",
-          fileIds: ["9"],
-        },
-       
+    //  {
+    //     platform: "slack",
+    //     type: "file",
+    //     caption: "yokoso watashino soul society",
+    //     fileIds:["1","2","9"],
+    //     channelId:"C0AEB4DEQHK",
+    //     workspaceName:"chronex-group"
+    //  },
+    {
+      platform:"discord",
+      type:"message",
+      caption:"yeh discord file hai",
+      channelId:"1060498088080457768",
+      // fileIds:["9","3"]
+     },
+    // {
+    //     platform: "instagram",
+    //     type: "carousel",
+    //     caption: "Check out these amazing photos! 📸",
+    //     fileIds: ["1", "2","3","4","5","6","8","9"],
+    //  },
+    //  {
+    //   platform:"linkedin",
+    //   type:"MultiPost",
+    //   caption:"yeh linkedin video hai",
+    //   fileIds:["1","2"]
+      
+    //  },
+    //  {
+    //   platform:"threads", 
+    //   type:"carousel",
+    //   caption:"yeh threads carousel hai",
+    //   fileIds:["1","2","3","4","5","6","8"],
+    //  }
+    
        
       ],
     });

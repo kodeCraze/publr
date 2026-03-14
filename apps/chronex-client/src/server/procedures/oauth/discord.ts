@@ -13,6 +13,7 @@ export const discordOAuthProcedure = workspaceProcedure
       platform: "discord",
       userId: ctx.user.id,
       workspaceId: ctx.workspaceId,
+      isRefreshable: false,
     };
 
     try {

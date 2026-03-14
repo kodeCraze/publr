@@ -37,6 +37,7 @@ export const instagramOAuthProcedure = workspaceProcedure
       userId: ctx.user.id,
       workspaceId: ctx.workspaceId,
       profileId: shortLivedToken.user_id,
+      isRefreshable: true,
     };
     await ctx.db.insert(authToken).values(datadb);
     return { access_token: longLivedToken.access_token };

@@ -221,7 +221,7 @@ export const LinkedInText = async (
   env: Env,
 ): Promise<void> => {
   const db = (await import("@repo/db")).createDb(env.DATABASE_URL);
-  console.log("LinkedInText handler called with payload:", payload);
+
   
   const data = payload.metadata as LinkedInMetadata;
 
@@ -297,14 +297,7 @@ export const LinkedInImage = async (
   }
 };
 
-/**
- * Publish a VIDEO post on LinkedIn.
- *
- * Flow: initVideoUpload → stream binary → createPost with video URN.
- *
- * Note: LinkedIn processes videos asynchronously but you can create the post
- * immediately after uploading — LinkedIn handles the processing on their end.
- */
+
 export const LinkedInVideo = async (
   payload: PlatformJobPayload,
   env: Env,
@@ -314,42 +307,28 @@ export const LinkedInVideo = async (
   const data = payload.metadata as LinkedInMetadata;
 
   try {
-    console.log("[LinkedInVideo] start", {
-      platformPostId: payload.platformPostId,
-      workspaceId: payload.workspaceId,
-      fileId: data.fileIds[0] ?? null,
-      captionLength: data.caption?.length ?? 0,
-    });
+   
+    
 
     await markProcessing(db, payload.platformPostId);
 
     const token = await getAuthToken(db, payload.workspaceId, "linkedin");
-    console.log("[LinkedInVideo] auth loaded", {
-      profileId: token.profileId,
-    });
 
+    
     const media = await fetchMedia(db, data.fileIds[0] ?? 0);
-    console.log("[LinkedInVideo] media fetched", {
-      mediaId: data.fileIds[0] ?? 0,
-      mediaUrl: media.url,
-    });
+ 
+    
 
     
     const headRes = await fetch(media.url, { method: "HEAD" });
-    console.log("[LinkedInVideo] media HEAD response", {
-      ok: headRes.ok,
-      status: headRes.status,
-      contentType: headRes.headers.get("content-type"),
-      contentLengthHeader: headRes.headers.get("content-length"),
-    });
 
+    
     const contentLength = parseInt(
       headRes.headers.get("content-length") ?? "0",
       10,
     );
-    console.log("[LinkedInVideo] parsed content length", {
-      contentLength,
-    });
+  
+    
 
     if (!contentLength) {
       throw new Error("Could not determine video file size from media URL");
@@ -360,19 +339,13 @@ export const LinkedInVideo = async (
       token,
       contentLength,
     );
-    console.log("[LinkedInVideo] upload initialized", {
-      videoUrn,
-      hasUploadUrl: Boolean(uploadUrl),
-    });
 
+    
     
     const etag = await uploadBinaryStream(uploadUrl, media.url, token);
    
-    console.log("[LinkedInVideo] binary upload complete", {
-      videoUrn,
-      etag,
-    });
 
+    
     
 await finalizeVideoUpload(token, videoUrn, uploadToken,  etag ? [etag] : []);
   
@@ -392,11 +365,8 @@ await finalizeVideoUpload(token, videoUrn, uploadToken,  etag ? [etag] : []);
       },
       lifecycleState: "PUBLISHED",
     });
-    console.log("[LinkedInVideo] post created", {
-      postUrn,
-      videoUrn,
-    });
 
+    
     await markPublished(db, payload.platformPostId, postUrn, `https://www.linkedin.com/feed/update/${postUrn}`);
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);

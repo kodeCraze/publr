@@ -25,6 +25,7 @@ export const linkedinOAuthProcedure = workspaceProcedure
       platform: "linkedin",
       userId: ctx.user.id,
       workspaceId: ctx.workspaceId,
+      isRefreshable:true,
     };
 
     try {
