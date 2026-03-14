@@ -84,13 +84,8 @@ async function processJob(job: PlatformJobPayload, env: Env): Promise<void> {
   if (!platformHandlers) {
     throw new Error(`Unsupported platform: ${job.platform}`)
   }
-  const platformpost = await createDb(env.DATABASE_URL)
-    .select()
-    .from(platformPosts)
-    .where(eq(platformPosts.id, job.platformPostId))
-    .limit(1)
-    .then((res) => res[0])
-  const contentType = (platformpost.metadata as { type?: string })?.type ?? ''
+
+  const contentType = (job.metadata as { type?: string })?.type ?? ''
   const handler = platformHandlers[contentType]
   if (!handler) {
     throw new Error(`Unsupported content type "${contentType}" for platform "${job.platform}"`)

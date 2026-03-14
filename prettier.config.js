@@ -8,4 +8,7 @@ export default {
   bracketSpacing: true,
   bracketSameLine: false,
   arrowParens: 'always',
+  plugins: ["prettier-plugin-tailwindcss"],
+ tailwindStylesheet: "./apps/chronex-client/src/app/globals.css",
+
 }

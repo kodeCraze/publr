@@ -131,9 +131,7 @@ export const createPost = workspaceProcedure.input(InputSchema).mutation(async (
       .values(platformEntries)
       .returning({ id: platformPosts.id, platform: platformPosts.platform })
 
-    // If scheduledAt is within 12 hours, enqueue now with a delay so the
-    // worker fires at the right moment. Posts further out are left for the
-    // cron job (runs every 12 h) to enqueue when they fall into range.
+
     const msUntilScheduled = scheduledMs - nowMs
     const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000
     console.log(insertedPlatformPosts)

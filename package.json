@@ -19,6 +19,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.29.3",
   "devDependencies": {
-    "prettier": "3.8.1"
+    "prettier": "3.8.1",
+    "prettier-plugin-tailwindcss": "^0.7.2"
   }
 }
