@@ -11,12 +11,7 @@ function getConfig() {
     );
   }
 
-  console.log("[CloudflareQueue] Config loaded", {
-    accountId: accountId.slice(0, 8) + "...",
-    queueId: queueId.slice(0, 8) + "...",
-    hasToken: !!apiToken,
-  });
-
+ 
   return { accountId, queueId, apiToken };
 }
 
@@ -94,6 +89,8 @@ export interface PlatformJobPayload {
   platform: string;
   workspaceId: number;
   scheduledAt: string; // ISO string
+  metadata: unknown;
+
 }
 
 interface CloudflareApiResponse {
@@ -110,18 +107,8 @@ export async function sendToQueue<T = unknown>(
 
   const url = `${CF_BASE}/accounts/${accountId}/queues/${queueId}/messages/batch`;
 
-  console.log("[CloudflareQueue] Sending batch to queue", {
-    url,
-    queueId,
-    messageCount: messages.length,
-    timestamp: new Date().toISOString(),
-  });
 
   const requestBody = { messages };
-  console.log(
-    "[CloudflareQueue] Request body:",
-    JSON.stringify(requestBody, null, 2),
-  );
 
   const startTime = performance.now();
 
@@ -137,7 +124,6 @@ export async function sendToQueue<T = unknown>(
   const duration = performance.now() - startTime;
   const rawText = await res.text();
 
-  console.log("[CloudflareQueue] Raw response:", rawText);
 
   let data: CloudflareApiResponse;
   try {
@@ -179,13 +165,6 @@ export async function queuePlatformJob(
   job: PlatformJobPayload,
   delaySeconds?: number,
 ): Promise<CloudflareApiResponse> {
-  console.log("[CloudflareQueue] Queuing platform job", {
-    postId: job.postId,
-    platformPostId: job.platformPostId,
-    platform: job.platform,
-    delaySeconds: delaySeconds ?? "none",
-    timestamp: new Date().toISOString(),
-  });
 
   const message: QueueMessage<PlatformJobPayload> = {
     body: job,

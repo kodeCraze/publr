@@ -4,39 +4,23 @@ import {
   markPublished,
   markFailed,
 } from "../utils/updatePostStatus";
-import { fetchMedia, fetchMediaMany, streamMedia } from "../utils/media";
+import { fetchMediaMany } from "../utils/media";
 import type { Env, PlatformJobPayload } from "../index";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+
 
 export interface SlackMetadata {
   caption: string;
   fileIds: number[];
   type: "message" | "file";
-  /** Slack channel ID to post to (stored in metadata or from authToken.profileId) */
   channelId?: string;
 }
 
 type AuthToken = Awaited<ReturnType<typeof getAuthToken>>;
-
 const SLACK_API = "https://slack.com/api";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/**
- * For Slack the auth_token row stores:
- *   accessToken = Bot/User OAuth token (xoxb-... or xoxp-...)
- *   profileId   = default channel ID
- *
- * Docs: https://api.slack.com/methods
- */
 
-/**
- * Post a text message to a Slack channel.
- *
- * POST https://slack.com/api/chat.postMessage
- * Docs: https://api.slack.com/methods/chat.postMessage
- */
 async function postMessage(
   token: AuthToken,
   channelId: string,
@@ -64,6 +48,7 @@ async function postMessage(
     ts?: string;
     error?: string;
   };
+
   if (!data.ok) {
     throw new Error(`Slack chat.postMessage failed: ${data.error}`);
   }
@@ -71,28 +56,49 @@ async function postMessage(
   return data.ts ?? "";
 }
 
-
-
 async function uploadFile(
   token: AuthToken,
   channelId: string,
   fileName: string,
-  fileSize: number,
   mediaUrl: string,
   initialComment?: string,
 ): Promise<string> {
-  // Step 1: Get the upload URL
+  
+  const mediaRes = await fetch(mediaUrl);
+  if (!mediaRes.ok) {
+    throw new Error(
+      `Failed to fetch media for Slack upload: ${mediaRes.status} ${mediaRes.statusText}`,
+    );
+  }
+
+  const fileBytes = await mediaRes.arrayBuffer();
+  const contentType =
+    mediaRes.headers.get("content-type") ?? "application/octet-stream";
+  const fileSize = fileBytes.byteLength;
+
+  if (!fileSize) {
+    throw new Error(`Could not determine file size for ${fileName}`);
+  }
+
+  
+  const getUrlBody = new URLSearchParams({
+    filename: fileName,
+    length: String(fileSize),
+  });
+
   const urlRes = await fetch(`${SLACK_API}/files.getUploadURLExternal`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
+      "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
       Authorization: `Bearer ${token.accessToken}`,
     },
-    body: new URLSearchParams({
-      filename: fileName,
-      length: String(fileSize),
-    }),
+    body: getUrlBody,
   });
+
+  if (!urlRes.ok) {
+    const err = await urlRes.text();
+    throw new Error(`Slack files.getUploadURLExternal HTTP error: ${err}`);
+  }
 
   const urlData = (await urlRes.json()) as {
     ok: boolean;
@@ -107,40 +113,42 @@ async function uploadFile(
     );
   }
 
-  // Step 2: Stream binary data to the upload URL via PUT
-  const { body, contentType, contentLength } = await streamMedia(mediaUrl);
-
-  const putHeaders: Record<string, string> = {
-    "Content-Type": contentType,
-  };
-  if (contentLength) {
-    putHeaders["Content-Length"] = String(contentLength);
-  }
-
-  const putRes = await fetch(urlData.upload_url, {
-    method: "PUT",
-    headers: putHeaders,
-    body,
+  
+  
+  const uploadRes = await fetch(urlData.upload_url, {
+    method: "POST",
+    headers: {
+      "Content-Type": contentType,
+      "Content-Length": String(fileSize),
+    },
+    body: fileBytes,
   });
 
-  if (!putRes.ok) {
-    const err = await putRes.text();
-    throw new Error(`Slack file upload PUT failed: ${err}`);
+  if (!uploadRes.ok) {
+    const err = await uploadRes.text();
+    throw new Error(`Slack file upload failed: ${err}`);
   }
 
-  // Step 3: Complete the upload and share to channel
+  
+  const completeBody = new URLSearchParams({
+    files: JSON.stringify([{ id: urlData.file_id, title: fileName }]),
+    channel_id: channelId,
+    ...(initialComment ? { initial_comment: initialComment } : {}),
+  });
+
   const completeRes = await fetch(`${SLACK_API}/files.completeUploadExternal`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json; charset=utf-8",
+      "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
       Authorization: `Bearer ${token.accessToken}`,
     },
-    body: JSON.stringify({
-      files: [{ id: urlData.file_id, title: fileName }],
-      channel_id: channelId,
-      ...(initialComment && { initial_comment: initialComment }),
-    }),
+    body: completeBody,
   });
+
+  if (!completeRes.ok) {
+    const err = await completeRes.text();
+    throw new Error(`Slack files.completeUploadExternal HTTP error: ${err}`);
+  }
 
   const completeData = (await completeRes.json()) as {
     ok: boolean;
@@ -157,16 +165,18 @@ async function uploadFile(
   return completeData.files?.[0]?.id ?? urlData.file_id;
 }
 
-// ─── Handlers ─────────────────────────────────────────────────────────────────
 
-/**
- * Send a plain text message to a Slack channel.
- */
+
 export const SlackMessage = async (
   payload: PlatformJobPayload,
   env: Env,
 ): Promise<void> => {
   const db = (await import("@repo/db")).createDb(env.DATABASE_URL);
+
+ 
+
+  
+
   const data = payload.metadata as SlackMetadata;
 
   try {
@@ -188,19 +198,16 @@ export const SlackMessage = async (
   }
 };
 
-/**
- * Upload file(s) to a Slack channel.
- *
- * Uses Slack's new multi-step upload flow:
- *   files.getUploadURLExternal → PUT binary (streamed) → files.completeUploadExternal
- *
- * For multiple files, each is uploaded individually and shared to the channel.
- */
 export const SlackFile = async (
   payload: PlatformJobPayload,
   env: Env,
 ): Promise<void> => {
   const db = (await import("@repo/db")).createDb(env.DATABASE_URL);
+
+ 
+
+  
+
   const data = payload.metadata as SlackMetadata;
 
   try {
@@ -218,35 +225,22 @@ export const SlackFile = async (
 
     for (let i = 0; i < mediaItems.length; i++) {
       const item = mediaItems[i]!;
-
-      // We need the file size for getUploadURLExternal
-      const headRes = await fetch(item.url, { method: "HEAD" });
-      const size = parseInt(headRes.headers.get("content-length") ?? "0", 10);
-      if (!size) {
-        throw new Error(
-          `Could not determine file size for fileId ${data.fileIds[i]}`,
-        );
-      }
-
-      // Derive filename
       const urlPath = new URL(item.url).pathname;
+
       const fileName =
-        urlPath.split("/").pop() ?? `file_${i}.${item.extension ?? "bin"}`;
+        urlPath.split("/").pop() || `file_${i}.${item.extension ?? "bin"}`;
 
       const fileId = await uploadFile(
         token,
         channelId,
         fileName,
-        size,
         item.url,
-        // Include caption only on the first file
         i === 0 ? data.caption : undefined,
       );
 
       uploadedFileIds.push(fileId);
     }
 
-    // Use the first file ID as the external ID for the platform post
     await markPublished(db, payload.platformPostId, uploadedFileIds[0] ?? "");
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);

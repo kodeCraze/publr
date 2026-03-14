@@ -13,6 +13,7 @@ export const message = z.object({
     platform: z.literal("slack"),
   caption: captionMax4000,
   type: z.literal("message"),
+  channelId: z.string(),
 });
 
 
@@ -21,6 +22,7 @@ export const file = z.object({
   caption: captionMax4000.optional(),
   fileIds: multipleFileIds,
   type: z.literal("file"),
+  channelId: z.string(),
 });
 
 

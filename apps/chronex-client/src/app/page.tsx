@@ -7,6 +7,8 @@ export default function Home() {
   const workspace = trpc.workspace.createWorkspace.useMutation();
   const oauth  = trpc.oauthRouter.slack.useMutation()
   const media = trpc.post.saveMedia.useMutation();
+  // const getusers = trpc.example.getAll.useQuery();
+  // console.log(getusers.data);
 const getUrl = trpc.post.getUploadUrl.useQuery(undefined, {
   enabled: false,
   
@@ -89,19 +91,21 @@ useEffect(() => {
     ],
   };
   const createPost = async () => {
+    const date = new Date(Date.now() ); // Schedule for 1 hour from now
     const data = await users.mutateAsync({
       title: "My awesome post",
-      content: ["11"], // Array of media IDs from your storage
-      platforms: ["instagram"],
-      scheduledAt: new Date(Date.now() ),
+      content: ["9"], // Array of media IDs from your storage
+      platforms: ["discord"],
+      scheduledAt: date,
       platformdata: [
-        // Instagram carousel
-        {
-          platform: "instagram",
-          type: "reel",
-          caption: "YO!, currently posting from the official API  #bankai",
-          fileIds: ["11"],
+     {
+          platform: "discord",
+          type: "file",
+          caption: "Excited to share our latest project update!",
+          channelId:"1152820878359404664",
+          fileIds: ["9"],
         },
+       
        
       ],
     });

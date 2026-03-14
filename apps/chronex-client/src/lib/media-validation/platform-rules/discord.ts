@@ -24,29 +24,38 @@ export const message = z.object({
     platform: z.literal("discord"),
   caption: captionMax2000,
   type: z.literal("message"),
+  channelId: z.string(),
+
 });
 
 export const embed = z
   .object({
     platform: z.literal("discord"),
-    caption: embedCaptionMax6000,
-    title: embedTitleMax256,
-    description: embedDescriptionMax4096,
+   embed:z.object({
+      title: embedTitleMax256,
+      description: embedDescriptionMax4096,
+      color: z.number().int().nonnegative().refine(val => val <= 0xFFFFFF, {
+        message: "Color must be a valid hex code (0 to 0xFFFFFF)",
+      }),
+      footer: z.object({ text: captionMax2000 }).optional(),
+      timestamp: z.string().refine(val => !isNaN(Date.parse(val)), {
+        message: "Timestamp must be a valid ISO 8601 date string",
+      }),
+      image: z.object({ url: z.url() }).optional(),
+      thumbnail: z.object({ url: z.url() }).optional(),
+      
+   }),
     type: z.literal("embed"),
+    channelId: z.string(),
   })
-  .refine(
-    (value) => Boolean(value.caption || value.title || value.description),
-    {
-      message:
-        "Provide at least one textual field when creating a Discord embed",
-    },
-  );
+
 
 export const file = z.object({
     platform: z.literal("discord"),
   caption: captionMax2000.optional(),
   fileIds: multipleFileIds,
   type: z.literal("file"),
+  channelId: z.string(),
 });
 
 

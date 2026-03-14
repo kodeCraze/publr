@@ -1,13 +1,13 @@
 import { getAuthToken } from "../utils/getAuthToken";
 import {
   markProcessing,
-  markPublished,
+  markPublishedIGTH,
   markFailed,
 } from "../utils/updatePostStatus";
-import { fetchMedia } from "../utils/media";
+import { fetchMedia, fetchMediaMany } from "../utils/media";
 import type { Env, PlatformJobPayload } from "../index";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+
 
 export interface ThreadsMetadata {
   caption: string;
@@ -17,10 +17,10 @@ export interface ThreadsMetadata {
 
 type AuthToken = Awaited<ReturnType<typeof getAuthToken>>;
 
-// Threads API uses the same Graph API host
+
 const THREADS_API = "https://graph.threads.net/v1.0";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 
 /**
  * Create a media container on Threads.
@@ -99,18 +99,20 @@ async function enqueueStatusCheck(
   env: Env,
   payload: PlatformJobPayload,
   containerId: string,
+  childContainerIds?: string[],
 ) {
   await env.CHRONEX_QUEUE_PRODUCER.send(
     {
       ...payload,
       phase: "check_status",
       containerId,
+      childContainerIds,
     },
     { delaySeconds: 10 },
   );
 }
 
-// ─── Handlers ─────────────────────────────────────────────────────────────────
+
 
 /**
  * Publish a TEXT-only post to Threads.
@@ -122,6 +124,9 @@ export const ThreadsText = async (
   env: Env,
 ): Promise<void> => {
   const db = (await import("@repo/db")).createDb(env.DATABASE_URL);
+
+  
+
   const data = payload.metadata as ThreadsMetadata;
 
   try {
@@ -135,7 +140,7 @@ export const ThreadsText = async (
     });
 
     const result = await publishContainer(token, container.id);
-    await markPublished(db, payload.platformPostId, result.id);
+    await markPublishedIGTH(db, payload.platformPostId, result.id,token.accessToken,THREADS_API);
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     await markFailed(db, payload.platformPostId, msg);
@@ -153,6 +158,8 @@ export const ThreadsImage = async (
   env: Env,
 ): Promise<void> => {
   const db = (await import("@repo/db")).createDb(env.DATABASE_URL);
+
+  
   const data = payload.metadata as ThreadsMetadata;
 
   try {
@@ -168,7 +175,7 @@ export const ThreadsImage = async (
     });
 
     const result = await publishContainer(token, container.id);
-    await markPublished(db, payload.platformPostId, result.id);
+    await markPublishedIGTH(db, payload.platformPostId, result.id, token.accessToken, THREADS_API);
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     await markFailed(db, payload.platformPostId, msg);
@@ -190,6 +197,8 @@ export const ThreadsVideo = async (
   env: Env,
 ): Promise<void> => {
   const db = (await import("@repo/db")).createDb(env.DATABASE_URL);
+
+  
   const data = payload.metadata as ThreadsMetadata;
 
   try {
@@ -200,7 +209,7 @@ export const ThreadsVideo = async (
 
       if (status === "FINISHED") {
         const result = await publishContainer(token, payload.containerId);
-        await markPublished(db, payload.platformPostId, result.id);
+        await markPublishedIGTH(db, payload.platformPostId, result.id, token.accessToken, THREADS_API);
         return;
       }
 
@@ -213,12 +222,12 @@ export const ThreadsVideo = async (
         return;
       }
 
-      // Still IN_PROGRESS
+      
       await enqueueStatusCheck(env, payload, payload.containerId);
       return;
     }
 
-    // Phase 1: Create container
+    
     await markProcessing(db, payload.platformPostId);
 
     const media = await fetchMedia(db, data.fileIds[0] ?? 0);
@@ -236,3 +245,83 @@ export const ThreadsVideo = async (
     throw error;
   }
 };
+
+export const ThreadsCarousel = async (
+  payload: PlatformJobPayload,
+  env: Env,
+): Promise<void> => {
+  const db = (await import("@repo/db")).createDb(env.DATABASE_URL);
+
+
+  const data = payload.metadata as ThreadsMetadata;
+
+  try {
+    const token = await getAuthToken(db, payload.workspaceId, "threads");
+
+    
+    if (payload.phase === "check_status" && payload.childContainerIds?.length && !payload.containerId) {
+      for (const containerId of payload.childContainerIds) {
+        const status = await checkContainerStatus(token, containerId);
+        if (status === "ERROR") {
+          await markFailed(db, payload.platformPostId, `Child container ${containerId} failed`);
+          return;
+        }
+        if (status === "IN_PROGRESS") {
+          await enqueueStatusCheck(env, payload, "", payload.childContainerIds);
+          return;
+        }
+      }
+
+      
+      const parentContainer = await createContainer(token, {
+        media_type: "CAROUSEL",
+        text: data.caption,
+        children: payload.childContainerIds.join(","), 
+      });
+
+      await enqueueStatusCheck(env, payload, parentContainer.id, payload.childContainerIds);
+      return;
+    }
+
+    
+    if (payload.phase === "check_status" && payload.containerId) {
+      const status = await checkContainerStatus(token, payload.containerId);
+      if (status === "ERROR") {
+        await markFailed(db, payload.platformPostId, `Parent container ${payload.containerId} failed`);
+        return;
+      }
+      if (status === "IN_PROGRESS") {
+        await enqueueStatusCheck(env, payload, payload.containerId, payload.childContainerIds);
+        return;
+      }
+
+      
+      const result = await publishContainer(token, payload.containerId);
+      await markPublishedIGTH(db, payload.platformPostId, result.id,token.accessToken, THREADS_API);
+      return; 
+    }
+
+    
+    await markProcessing(db, payload.platformPostId); 
+    const media = await fetchMediaMany(db, data.fileIds);
+
+    const childContainerIds: string[] = [];
+    for (const item of media) {
+      const isVideo = item.type === "video";
+      const childContainer = await createContainer(token, {
+        media_type: isVideo ? "VIDEO" : "IMAGE",
+        [isVideo ? "video_url" : "image_url"]: item.url,
+        is_carousel_item: true, 
+      });
+      childContainerIds.push(childContainer.id);
+    }
+
+    await enqueueStatusCheck(env, payload, "", childContainerIds);
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    await markFailed(db, payload.platformPostId, msg);
+    throw error;
+  }
+};
+    
+

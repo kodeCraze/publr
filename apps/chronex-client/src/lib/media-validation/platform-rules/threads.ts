@@ -37,6 +37,12 @@ export const video = z.object({
   type: z.literal("video"),
 });
 
+export const carousel = z.object({
+    platform: z.literal("threads"),
+  caption: captionMax500,
+  fileIds: mediaIdsOneToTen,
+  type: z.literal("carousel"),
+});
 
- const ThreadsUnion = z.discriminatedUnion("type", [text, image, video])
+ const ThreadsUnion = z.discriminatedUnion("type", [text, image, video, carousel])
     export default ThreadsUnion;

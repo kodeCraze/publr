@@ -4,10 +4,9 @@ import {
   markPublished,
   markFailed,
 } from "../utils/updatePostStatus";
-import { fetchMedia, fetchMediaMany } from "../utils/media";
+import {  fetchMediaMany } from "../utils/media";
 import type { Env, PlatformJobPayload } from "../index";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface DiscordMetadata {
   caption: string;
@@ -32,7 +31,6 @@ interface DiscordWebhookResponse {
   token?: string;
 }
 
-/** Response from POST /channels/{id}/webhooks */
 interface DiscordWebhookCreateResponse {
   id: string;
   token: string;
@@ -40,29 +38,11 @@ interface DiscordWebhookCreateResponse {
 
 type AuthToken = Awaited<ReturnType<typeof getAuthToken>>;
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/**
- * For Discord the auth_token row stores:
- *   accessToken = guild ID
- *   profileId   = guild ID
- *
- * The bot token lives in env.DISCORD_BOT_TOKEN.
- * At execution time the worker creates a temporary webhook in the target
- * channel (channelId comes from the job payload metadata), uses it to post,
- * and then deletes the webhook to keep the channel clean.
- *
- * Discord docs:
- *   Create Webhook  — POST /channels/{channel.id}/webhooks
- *   Execute Webhook — POST /webhooks/{webhook.id}/{webhook.token}
- *   Delete Webhook  — DELETE /webhooks/{webhook.id}/{webhook.token}
- */
 
 const DISCORD_API = "https://discord.com/api/v10";
 
-/**
- * Create a temporary webhook in the given channel using the bot token.
- */
+
 async function createWebhook(
   botToken: string,
   channelId: string,
@@ -89,9 +69,6 @@ async function createWebhook(
   };
 }
 
-/**
- * Delete a webhook after use to keep the channel clean.
- */
 async function deleteWebhook(
   webhookId: string,
   webhookToken: string,
@@ -101,10 +78,7 @@ async function deleteWebhook(
   });
 }
 
-/**
- * Execute a Discord webhook with a JSON body (text/embed messages).
- * Appends ?wait=true so we get the created message back (with its ID).
- */
+
 async function executeWebhookJson(
   webhookUrl: string,
   body: Record<string, unknown>,
@@ -123,21 +97,7 @@ async function executeWebhookJson(
   return res.json() as Promise<DiscordWebhookResponse>;
 }
 
-/**
- * Execute a Discord webhook with streaming multipart/form-data for file
- * attachments.
- *
- * Instead of buffering all files into memory (which would blow the 128 MB
- * Workers limit for large / many attachments), each file's binary data is
- * streamed directly from its source URL through the multipart body using a
- * TransformStream pipe.
- *
- * Discord webhook supports up to 10 files via multipart.
- * The JSON payload goes into the `payload_json` part and each binary file
- * goes into its own `files[n]` part.
- *
- * Docs: https://discord.com/developers/docs/reference#uploading-files
- */
+
 async function executeWebhookMultipart(
   webhookUrl: string,
   jsonPayload: Record<string, unknown>,
@@ -231,16 +191,13 @@ async function executeWebhookMultipart(
   return res.json() as Promise<DiscordWebhookResponse>;
 }
 
-// ─── Handlers ─────────────────────────────────────────────────────────────────
 
-/**
- * Send a plain text message via Discord webhook.
- */
 export const DiscordMessage = async (
   payload: PlatformJobPayload,
   env: Env,
 ): Promise<void> => {
   const db = (await import("@repo/db")).createDb(env.DATABASE_URL);
+
   const data = payload.metadata as DiscordMetadata;
 
   let webhookId: string | undefined;
@@ -269,17 +226,13 @@ export const DiscordMessage = async (
   }
 };
 
-/**
- * Send a rich embed message via Discord webhook.
- *
- * The embed object is taken from metadata.embed. If images are referenced
- * in fileIds, we include them as the embed image.
- */
+
 export const DiscordEmbed = async (
   payload: PlatformJobPayload,
   env: Env,
 ): Promise<void> => {
   const db = (await import("@repo/db")).createDb(env.DATABASE_URL);
+
   const data = payload.metadata as DiscordMetadata;
 
   let webhookId: string | undefined;
@@ -292,17 +245,8 @@ export const DiscordEmbed = async (
     webhookId = webhook.webhookId;
     webhookToken = webhook.webhookToken;
 
-    // Build embed object — if file IDs exist, use the first as the embed image
     const embed: Record<string, unknown> = { ...data.embed };
 
-    if (data.fileIds?.length) {
-      const media = await fetchMedia(db, data.fileIds[0] ?? 0);
-      embed.image = { url: media.url };
-    }
-
-    if (data.caption && !embed.description) {
-      embed.description = data.caption;
-    }
 
     const result = await executeWebhookJson(webhook.webhookUrl, {
       embeds: [embed],
@@ -320,18 +264,13 @@ export const DiscordEmbed = async (
   }
 };
 
-/**
- * Send file(s) via Discord webhook using streaming multipart form data.
- *
- * Each file is streamed directly from its source URL through the multipart
- * body — no file is ever fully buffered in Worker memory.
- * Discord supports up to 10 attachments per webhook message.
- */
+
 export const DiscordFile = async (
   payload: PlatformJobPayload,
   env: Env,
 ): Promise<void> => {
   const db = (await import("@repo/db")).createDb(env.DATABASE_URL);
+
   const data = payload.metadata as DiscordMetadata;
 
   let webhookId: string | undefined;

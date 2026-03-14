@@ -1,4 +1,4 @@
-/// <reference types="@cloudflare/workers-types" />
+
 import {
   createDb,
   workspace,
@@ -11,34 +11,17 @@ import {
 } from "@repo/db";
 import { markFailed } from "./utils/updatePostStatus";
 
-/**
- * Cloudflare Worker — Queue Consumer
- *
- * Listens to the platform jobs queue and processes scheduled posts.
- */
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface PlatformJobPayload {
   postId: number;
   platformPostId: number;
   platform: string;
   workspaceId: number;
-  scheduledAt: string; // ISO string
-
-  /** Metadata for the platform handler (caption, fileIds, etc.) */
+  scheduledAt: string;
   metadata?: unknown;
-
-  /**
-   * "create" (default) — first invocation, create the container.
-   * "check_status" — re-enqueued invocation, check if container is ready.
-   */
   phase?: "create" | "check_status";
-
-  /** IG container ID carried across re-enqueued messages. */
   containerId?: string;
-
-  /** Carousel child container IDs carried across re-enqueued messages. */
   childContainerIds?: string[];
 }
 
@@ -49,7 +32,6 @@ export interface Env {
   CHRONEX_QUEUE_PRODUCER: Queue;
 }
 
-// ─── Imports: Platform handlers ───────────────────────────────────────────────
 
 import {
   InstagramImage,
@@ -69,6 +51,7 @@ import {
   ThreadsText,
   ThreadsImage,
   ThreadsVideo,
+  ThreadsCarousel,
 } from "./platformHandlers/threads";
 
 import {
@@ -79,15 +62,10 @@ import {
 
 import { SlackMessage, SlackFile } from "./platformHandlers/slack";
 
-// ─── Handler registry ─────────────────────────────────────────────────────────
 
 type PostHandler = (payload: PlatformJobPayload, env: Env) => Promise<void>;
 
-/**
- * Map of platform → content type → handler.
- * The content type is determined by the `metadata.type` field on the job payload
- * (e.g. "image", "reel", "carousel", "story", "text", "message", "file", etc.).
- */
+
 const handlerRegistry: Record<string, Record<string, PostHandler>> = {
   instagram: {
     image: InstagramImage,
@@ -105,6 +83,7 @@ const handlerRegistry: Record<string, Record<string, PostHandler>> = {
     text: ThreadsText,
     image: ThreadsImage,
     video: ThreadsVideo,
+    carousel: ThreadsCarousel,
   },
   discord: {
     message: DiscordMessage,
@@ -117,7 +96,6 @@ const handlerRegistry: Record<string, Record<string, PostHandler>> = {
   },
 };
 
-// ─── Message Handler ──────────────────────────────────────────────────────────
 
 async function processJob(job: PlatformJobPayload, env: Env): Promise<void> {
   const platformHandlers = handlerRegistry[job.platform];
@@ -141,15 +119,9 @@ const platformpost = await createDb(env.DATABASE_URL)
   await handler(job, env);
 }
 
-// ─── Worker Export ────────────────────────────────────────────────────────────
 
 export default {
-  /**
-   * Queue consumer handler.
-   * Each message is processed individually. On unrecoverable errors the
-   * platform post is marked as "failed" in the DB and the message is ack'd
-   * so it doesn't retry endlessly.
-   */
+ 
   async queue(
     batch: MessageBatch<PlatformJobPayload>,
     env: Env,
@@ -159,6 +131,7 @@ export default {
       const job = message.body;
       try {
         await processJob(job, env);
+        console.log(`process finish acknowledgement`);
         message.ack();
       } catch (error) {
         console.error(
@@ -166,8 +139,9 @@ export default {
           error,
         );
 
-        // Mark failed in DB so the user sees the error
+        
         try {
+          console.log("Updating platform post status to 'failed' in DB...");
           const db = createDb(env.DATABASE_URL);
           const msg = error instanceof Error ? error.message : String(error);
           await markFailed(db, job.platformPostId, msg);
@@ -175,17 +149,13 @@ export default {
           console.error("Could not update platform post status:", dbErr);
         }
 
-        // Retry the message (Cloudflare will respect max_retries in wrangler.toml)
+        
         message.retry();
       }
     }
   },
 
-  /**
-   * Cron trigger — runs every 12 hours.
-   * Queries all "pending" platform posts whose scheduledAt is within the next
-   * 12 hours and enqueues them for processing.
-   */
+
   async scheduled(
     event: ScheduledEvent,
     env: Env,
@@ -194,9 +164,9 @@ export default {
     const db = createDb(env.DATABASE_URL);
 
     const now = new Date();
-    const horizon = new Date(now.getTime() + 12 * 60 * 60 * 1000); // +12 h
+    const horizon = new Date(now.getTime() + 12 * 60 * 60 * 1000); 
 
-    // Pending platform posts scheduled within the next 12 hours
+    
     const rows = await db
       .select({
         platformPostId: platformPosts.id,
@@ -219,7 +189,7 @@ export default {
       return;
     }
 
-    // Look up workspaceId per post (one query)
+    
     const postIds = [...new Set(rows.map((r) => r.postId))];
     const posts = await db
       .select({ id: post.id, workspaceId: post.workspaceId })
@@ -248,16 +218,28 @@ export default {
         phase: "create",
       };
 
-      await env.CHRONEX_QUEUE_PRODUCER.send(payload);
+      const delaySeconds = Math.max(
+  0,
+  Math.floor((row.scheduledAt!.getTime() - now.getTime()) / 1000)
+);
+
+await env.CHRONEX_QUEUE_PRODUCER.send(payload, { delaySeconds });
+      await db
+    .update(platformPosts)
+    .set({ status: "processing" })
+    .where(
+      and(
+        eq(platformPosts.id, row.platformPostId),
+        eq(platformPosts.status, "pending"),
+      ),
+    );
       enqueued++;
     }
 
     console.log(`Cron: enqueued ${enqueued} platform post(s).`);
   },
 
-  /**
-   * Optional: HTTP handler for health checks or manual triggers
-   */
+
   async fetch(
     request: Request,
     env: Env,

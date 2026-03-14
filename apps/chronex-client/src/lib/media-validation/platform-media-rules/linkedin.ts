@@ -41,7 +41,7 @@ const image = z.array(
       .positive()
       .min(200, "Minimum height is 200px")
       .max(4320, "Maximum height is 4320px"),
-    extension: z.enum(["jpg", "jpeg", "png", "gif"]),
+    extension: z.enum(["jpg", "jpeg", "png", "gif","webp"]),
     aspectRatio: z
       .string()
       .regex(/^([1-9]\d*):([1-9]\d*)$/, "Aspect ratio must be in W:H format"),
@@ -109,6 +109,7 @@ const MultiPost = z.array(
       "jpeg",
       "png",
       "gif",
+      "webp",
       "pdf",
       "ppt",
       "pptx",

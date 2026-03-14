@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // ─── Constants (in MB) ────────────────────────────────────────────────────────
-const MAX_FILE_SIZE = 10; // 10 MB (free tier cap)
+const MAX_FILE_SIZE = 25; // 25 MB (free tier cap)
 
 // ─── Shared file item ─────────────────────────────────────────────────────────
 const discordFileItem = z.object({
@@ -10,7 +10,7 @@ const discordFileItem = z.object({
   size: z
     .number()
     .positive()
-    .max(MAX_FILE_SIZE, "Discord attachments cannot exceed 10MB"),
+    .max(MAX_FILE_SIZE, "Discord attachments cannot exceed 25MB"),
   width: z.number().int().positive().optional(),
   height: z.number().int().positive().optional(),
   duration: z.number().positive().nullish(),

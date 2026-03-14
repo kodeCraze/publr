@@ -123,6 +123,8 @@ export const createPost = workspaceProcedure
             hashtags: "hashtags" in p ? p.hashtags : null,
             title: "title" in p ? p.title : null,
             fileIds: "fileIds" in p ? p.fileIds : null,
+            channelId: "channelId" in p ? p.channelId : null,
+            embed: "embed" in p ? p.embed : null,
           },
           status: "pending" as const,
           scheduledAt: input.scheduledAt,
@@ -139,7 +141,7 @@ export const createPost = workspaceProcedure
       // cron job (runs every 12 h) to enqueue when they fall into range.
       const msUntilScheduled = scheduledMs - nowMs;
       const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
-
+console.log(insertedPlatformPosts)
       if (msUntilScheduled < TWELVE_HOURS_MS) {
         const delaySeconds = Math.max(0, Math.floor(msUntilScheduled / 1000));
 
@@ -151,6 +153,7 @@ export const createPost = workspaceProcedure
               platform: pp.platform,
               workspaceId: ctx.workspaceId,
               scheduledAt: input.scheduledAt.toISOString(),
+              metadata: platformEntries.find((e) => e.platform === pp.platform)?.metadata,
             },
             delaySeconds,
           );

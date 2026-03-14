@@ -7,7 +7,7 @@ import {
 import { fetchMedia, fetchMediaMany, streamMedia } from "../utils/media";
 import type { Env, PlatformJobPayload } from "../index";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+
 
 export interface LinkedInMetadata {
   caption: string;
@@ -17,15 +17,15 @@ export interface LinkedInMetadata {
 
 type AuthToken = Awaited<ReturnType<typeof getAuthToken>>;
 
-// LinkedIn Community Management API (v2)
+
 const LI_API = "https://api.linkedin.com/rest";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 
 function authHeaders(token: AuthToken) {
   return {
     Authorization: `Bearer ${token.accessToken}`,
-    "LinkedIn-Version": "202402",
+    "LinkedIn-Version": "202602",
     "X-Restli-Protocol-Version": "2.0.0",
   };
 }
@@ -57,12 +57,13 @@ async function initImageUpload(token: AuthToken) {
   }
 
   const data = (await res.json()) as {
-    value: { uploadUrl: string; image: string };
+    value: { uploadUrl: string; image: string ,uploadToken: string};
   };
 
   return {
     uploadUrl: data.value.uploadUrl,
     imageUrn: data.value.image,
+    uploadToken: data.value.uploadToken,
   };
 }
 
@@ -97,25 +98,25 @@ async function initVideoUpload(token: AuthToken, fileSizeBytes: number) {
     value: {
       uploadInstructions: Array<{ uploadUrl: string }>;
       video: string;
+      uploadToken: string;
     };
   };
 
   return {
     uploadUrl: data.value.uploadInstructions[0]?.uploadUrl ?? "",
     videoUrn: data.value.video,
+    uploadToken: data.value.uploadToken ?? "",
   };
 }
+   
 
-/**
- * Upload binary data to a LinkedIn upload URL by streaming from the media URL.
- *
- * LinkedIn expects a PUT with the raw binary body + Content-Type header.
- */
+
+
 async function uploadBinaryStream(
   uploadUrl: string,
   mediaUrl: string,
   token: AuthToken,
-) {
+): Promise<string | null> {
   const { body, contentType, contentLength } = await streamMedia(mediaUrl);
 
   const headers: Record<string, string> = {
@@ -130,13 +131,52 @@ async function uploadBinaryStream(
     method: "PUT",
     headers,
     body,
-    // @ts-expect-error — duplex required for streaming request body in fetch
+        // @ts-expect-error — duplex required for streaming request body in fetch
+
     duplex: "half",
   });
 
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`LinkedIn binary upload failed: ${err}`);
+  }
+
+  return res.headers.get("etag"); 
+}
+
+/**
+ * Finalize a video upload on LinkedIn.
+ *
+ * This MUST be called after all parts have been uploaded. Without this step,
+ * LinkedIn never processes the video and any post referencing it will be invisible.
+ *
+ * POST https://api.linkedin.com/rest/videos?action=finalizeUpload
+ * Docs: https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/videos-api
+ */
+async function finalizeVideoUpload(
+  token: AuthToken,
+  videoUrn: string,
+  uploadToken: string,
+  uploadedPartIds: string[], 
+) {
+  const res = await fetch(`${LI_API}/videos?action=finalizeUpload`, {
+    method: "POST",
+    headers: {
+      ...authHeaders(token),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      finalizeUploadRequest: {
+        video: videoUrn,
+        uploadToken,
+        uploadedPartIds,
+      },
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`LinkedIn finalizeVideoUpload failed: ${err}`);
   }
 }
 
@@ -164,12 +204,12 @@ async function createPost(
     throw new Error(`LinkedIn createPost failed: ${err}`);
   }
 
-  // LinkedIn returns the post URN in the x-restli-id header
+  
   const postUrn = res.headers.get("x-restli-id") ?? "";
   return postUrn;
 }
 
-// ─── Handlers ─────────────────────────────────────────────────────────────────
+
 
 /**
  * Publish a TEXT-only post on LinkedIn.
@@ -181,6 +221,8 @@ export const LinkedInText = async (
   env: Env,
 ): Promise<void> => {
   const db = (await import("@repo/db")).createDb(env.DATABASE_URL);
+  console.log("LinkedInText handler called with payload:", payload);
+  
   const data = payload.metadata as LinkedInMetadata;
 
   try {
@@ -216,6 +258,7 @@ export const LinkedInImage = async (
   env: Env,
 ): Promise<void> => {
   const db = (await import("@repo/db")).createDb(env.DATABASE_URL);
+  
   const data = payload.metadata as LinkedInMetadata;
 
   try {
@@ -224,13 +267,13 @@ export const LinkedInImage = async (
     const token = await getAuthToken(db, payload.workspaceId, "linkedin");
     const media = await fetchMedia(db, data.fileIds[0] ?? 0);
 
-    // 1. Initialize the image upload
+    
     const { uploadUrl, imageUrn } = await initImageUpload(token);
 
-    // 2. Stream binary from our storage to LinkedIn
+    
     await uploadBinaryStream(uploadUrl, media.url, token);
 
-    // 3. Create the post referencing the uploaded image
+    
     const postUrn = await createPost(token, {
       author: `urn:li:person:${token.profileId}`,
       commentary: data.caption,
@@ -267,31 +310,74 @@ export const LinkedInVideo = async (
   env: Env,
 ): Promise<void> => {
   const db = (await import("@repo/db")).createDb(env.DATABASE_URL);
+  
   const data = payload.metadata as LinkedInMetadata;
 
   try {
+    console.log("[LinkedInVideo] start", {
+      platformPostId: payload.platformPostId,
+      workspaceId: payload.workspaceId,
+      fileId: data.fileIds[0] ?? null,
+      captionLength: data.caption?.length ?? 0,
+    });
+
     await markProcessing(db, payload.platformPostId);
 
     const token = await getAuthToken(db, payload.workspaceId, "linkedin");
-    const media = await fetchMedia(db, data.fileIds[0] ?? 0);
+    console.log("[LinkedInVideo] auth loaded", {
+      profileId: token.profileId,
+    });
 
-    // We need the file size for the video init call. Download the head first.
+    const media = await fetchMedia(db, data.fileIds[0] ?? 0);
+    console.log("[LinkedInVideo] media fetched", {
+      mediaId: data.fileIds[0] ?? 0,
+      mediaUrl: media.url,
+    });
+
+    
     const headRes = await fetch(media.url, { method: "HEAD" });
+    console.log("[LinkedInVideo] media HEAD response", {
+      ok: headRes.ok,
+      status: headRes.status,
+      contentType: headRes.headers.get("content-type"),
+      contentLengthHeader: headRes.headers.get("content-length"),
+    });
+
     const contentLength = parseInt(
       headRes.headers.get("content-length") ?? "0",
       10,
     );
+    console.log("[LinkedInVideo] parsed content length", {
+      contentLength,
+    });
+
     if (!contentLength) {
       throw new Error("Could not determine video file size from media URL");
     }
 
-    // 1. Initialize the video upload
-    const { uploadUrl, videoUrn } = await initVideoUpload(token, contentLength);
+    
+    const { uploadUrl, videoUrn, uploadToken } = await initVideoUpload(
+      token,
+      contentLength,
+    );
+    console.log("[LinkedInVideo] upload initialized", {
+      videoUrn,
+      hasUploadUrl: Boolean(uploadUrl),
+    });
 
-    // 2. Stream binary to LinkedIn
-    await uploadBinaryStream(uploadUrl, media.url, token);
+    
+    const etag = await uploadBinaryStream(uploadUrl, media.url, token);
+   
+    console.log("[LinkedInVideo] binary upload complete", {
+      videoUrn,
+      etag,
+    });
 
-    // 3. Create the post referencing the uploaded video
+    
+await finalizeVideoUpload(token, videoUrn, uploadToken,  etag ? [etag] : []);
+  
+
+    
     const postUrn = await createPost(token, {
       author: `urn:li:person:${token.profileId}`,
       commentary: data.caption,
@@ -306,10 +392,20 @@ export const LinkedInVideo = async (
       },
       lifecycleState: "PUBLISHED",
     });
+    console.log("[LinkedInVideo] post created", {
+      postUrn,
+      videoUrn,
+    });
 
     await markPublished(db, payload.platformPostId, postUrn);
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
+    console.error("[LinkedInVideo] failed", {
+      platformPostId: payload.platformPostId,
+      workspaceId: payload.workspaceId,
+      error: msg,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     await markFailed(db, payload.platformPostId, msg);
     throw error;
   }
@@ -328,24 +424,8 @@ export const LinkedInMultiPost = async (
   env: Env,
 ): Promise<void> => {
   const db = (await import("@repo/db")).createDb(env.DATABASE_URL);
+  
   const data = payload.metadata as LinkedInMetadata;
-
-  if (data.fileIds.length < 2) {
-    await markFailed(
-      db,
-      payload.platformPostId,
-      "Multi-image post requires at least 2 images",
-    );
-    return;
-  }
-  if (data.fileIds.length > 20) {
-    await markFailed(
-      db,
-      payload.platformPostId,
-      "LinkedIn multi-image supports a maximum of 20 images",
-    );
-    return;
-  }
 
   try {
     await markProcessing(db, payload.platformPostId);
@@ -353,7 +433,7 @@ export const LinkedInMultiPost = async (
     const token = await getAuthToken(db, payload.workspaceId, "linkedin");
     const mediaItems = await fetchMediaMany(db, data.fileIds);
 
-    // Upload each image and collect URNs
+    
     const imageUrns: string[] = [];
     for (const item of mediaItems) {
       const { uploadUrl, imageUrn } = await initImageUpload(token);
@@ -361,7 +441,7 @@ export const LinkedInMultiPost = async (
       imageUrns.push(imageUrn);
     }
 
-    // Create the multi-image post
+    
     const postUrn = await createPost(token, {
       author: `urn:li:person:${token.profileId}`,
       commentary: data.caption,

@@ -43,7 +43,9 @@ export async function markPublished(
   db: DB,
   platformPostId: number,
   externalId: string,
+
 ) {
+
   return updatePlatformPostStatus(db, platformPostId, "published", {
     externalId,
     publishedAt: new Date(),
@@ -60,5 +62,22 @@ export async function markFailed(
 ) {
   return updatePlatformPostStatus(db, platformPostId, "failed", {
     errorMessage,
+  });
+}
+export async function markPublishedIGTH(
+  db: DB,
+  platformPostId: number,
+  externalId: string,
+  token:string,
+  url:string,
+) {
+  const response = await fetch(
+  `${url}/${externalId}?fields=permalink&access_token=${token}`
+);
+const res:Record<any,string> = await response.json();
+  return updatePlatformPostStatus(db, platformPostId, "published", {
+    externalId,
+    postUrl: res.permalink,
+    publishedAt: new Date(),
   });
 }
