@@ -9,6 +9,7 @@ export default function Home() {
   const media = trpc.post.saveMedia.useMutation()
   // const getusers = trpc.example.getAll.useQuery();
   // console.log(getusers.data);
+
   const getUrl = trpc.post.getUploadUrl.useQuery(undefined, {
     enabled: false,
   })

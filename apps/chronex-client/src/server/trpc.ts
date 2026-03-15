@@ -2,34 +2,32 @@ import { initTRPC, TRPCError } from '@trpc/server'
 import superjson from 'superjson'
 import { db } from '@/config/drizzle'
 import { auth } from '@/config/authInstance'
-import { headers } from 'next/dist/server/request/headers'
-import { z } from 'zod'
-/**
- * Context creation for each request
- */
+import { cookies } from "next/headers"
+
 export const createTRPCContext = async (opts: { headers: Headers }) => {
-  const workspaceId = opts.headers.get('x-workspace-id')
+    const cookieStore = await cookies()
+
+  const workspaceId = cookieStore.get('workspaceId')?.value || opts.headers.get('x-workspace-id')
+
   const session = await auth.api.getSession({
-    headers: await headers(),
+    headers: opts.headers,
   })
+
   return {
     db,
     headers: opts.headers,
+    cookies: cookieStore,
     user: session?.user || null,
     workspaceId: workspaceId || null,
   }
 }
 
-/**
- * Initialize tRPC
- */
-const t = initTRPC.context<typeof createTRPCContext>().create({
+export type TRPCContext = Awaited<ReturnType<typeof createTRPCContext>>
+
+const t = initTRPC.context<TRPCContext>().create({
   transformer: superjson,
 })
 
-/**
- * Export reusable router and procedure helpers
- */
 export const createTRPCRouter = t.router
 export const createCallerFactory = t.createCallerFactory
 export const publicProcedure = t.procedure
@@ -41,6 +39,7 @@ export const authProcedure = publicProcedure.use(async ({ ctx, next }) => {
       message: 'You must be logged in to access this resource',
     })
   }
+
   return next({
     ctx: {
       ...ctx,
@@ -48,6 +47,7 @@ export const authProcedure = publicProcedure.use(async ({ ctx, next }) => {
     },
   })
 })
+
 export const workspaceProcedure = authProcedure.use(async ({ ctx, next }) => {
   if (!ctx.workspaceId) {
     throw new TRPCError({
@@ -55,6 +55,7 @@ export const workspaceProcedure = authProcedure.use(async ({ ctx, next }) => {
       message: 'You do not have access to this workspace',
     })
   }
+
   return next({
     ctx: {
       ...ctx,

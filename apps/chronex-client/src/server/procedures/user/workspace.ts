@@ -18,6 +18,12 @@ export const createWorkspaceProcedure = authProcedure
     }
     const [newworkspace] = await ctx.db.insert(workspace).values(values).returning()
     if (!newworkspace) throw new Error('Insert failed')
+ctx.cookies.set('workspaceId', String(newworkspace.id), {
+      httpOnly: false,
+      path: '/',
+            sameSite: "lax",
+  
+    })  
 
     return newworkspace
   })

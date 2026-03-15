@@ -5,11 +5,7 @@ import { httpBatchLink } from '@trpc/client'
 import { useState } from 'react'
 import superjson from 'superjson'
 import { trpc } from '@/utils/trpc'
-function getBaseUrl() {
-  if (typeof window !== 'undefined') return ''
-  if (process.env.NEXT_PUBLIC_APP_URL) return `https://${process.env.NEXT_PUBLIC_APP_URL}`
-  return `http://localhost:${process.env.PORT ?? 3000}`
-}
+import { getBaseUrl } from '@/utils/getBaseUrl'
 
 export function TRPCProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient())
