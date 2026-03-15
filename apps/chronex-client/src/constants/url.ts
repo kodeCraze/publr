@@ -1,5 +1,8 @@
+export const INSTA_PROFILE_URL = 'https://graph.instagram.com/me'
+export const THREADS_PROFILE_URL = 'https://graph.threads.net/me'
 export const INSTA_SHORT_LIVED_TOKEN_URL = 'https://api.instagram.com/oauth/access_token'
 export const INSTA_LONG_LIVED_TOKEN_URL = 'https://graph.instagram.com/access_token'
 export const THREADS_SHORT_LIVED_TOKEN_URL = 'https://graph.threads.net/oauth/access_token'
 export const THREADS_LONG_LIVED_TOKEN_URL = 'https://graph.threads.net/access_token'
 export const CF_BASE = 'https://api.cloudflare.com/client/v4'
+export const DISCORD_TOKEN_URL = 'https://discord.com/api/oauth2/token'

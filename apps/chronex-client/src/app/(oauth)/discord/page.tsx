@@ -4,18 +4,18 @@ import { getCaller } from "@/utils/trpcServer"
 
 type PageProps = {
   searchParams: Promise<{
-    guild_id?: string
+    code?: string
   }>
 }
 
 export default async function Page({ searchParams }: PageProps) {
-  const { guild_id } = await searchParams
+  const { code } = await searchParams
 
-  if (!guild_id) redirect("/oauth")
+  if (!code) redirect("/oauth")
 
   try {
     const caller = await getCaller()
-    await caller.oauthRouter.discord({ guild_id })
+    await caller.oauthRouter.discord({ code })
     return <div>Authorization successful. You can close this tab.</div>
   } catch (error) {
     console.error("Discord OAuth error:", error)
