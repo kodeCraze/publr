@@ -23,7 +23,7 @@ export const instagramOAuthProcedure = workspaceProcedure
       accessToken: shortLivedToken.access_token,
       grantType: 'ig_exchange_token',
     })
-    const url = `${INSTA_PROFILE_URL}/v1.0/me?access_token=${longLivedToken.access_token}`;
+    const url = `${INSTA_PROFILE_URL}/v24.0/me?access_token=${longLivedToken.access_token}`;
 
     const response = await fetch(url);
 
