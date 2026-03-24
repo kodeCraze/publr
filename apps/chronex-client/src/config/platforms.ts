@@ -125,13 +125,6 @@ export const PLATFORM_CONFIG: PlatformConfig[] = [
         label: 'Message',
         requiresMedia: false,
         minMedia: 0,
-        maxMedia: 10,
-      },
-      {
-        id: 'block',
-        label: 'Block / Section',
-        requiresMedia: false,
-        minMedia: 0,
         maxMedia: 0,
       },
       {
@@ -152,7 +145,7 @@ export const PLATFORM_CONFIG: PlatformConfig[] = [
         label: 'Message',
         requiresMedia: false,
         minMedia: 0,
-        maxMedia: 10,
+        maxMedia: 0,
       },
       {
         id: 'embed',

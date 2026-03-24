@@ -126,9 +126,10 @@ async function uploadFileToB2(
   authToken: string,
   dimensions: MediaDimensions,
 ): Promise<{ fileId: string }> {
+  const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`
   const headers: Record<string, string> = {
     Authorization: authToken,
-    'X-Bz-File-Name': encodeURIComponent(file.name + Date.now()),
+    'X-Bz-File-Name': encodeURIComponent(id),
     'Content-Type': file.type || 'b2/x-auto',
     'X-Bz-Content-Sha1': 'do_not_verify',
     'X-Bz-Info-width': String(dimensions.width),
