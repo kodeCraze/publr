@@ -55,13 +55,15 @@ export const getMedia = workspaceProcedure.query(async ({ ctx }) => {
 
     const arr = await Promise.all(
       media.map(async (m) => {
-        const isTokenExpired = m.expiresAt && m.expiresAt > new Date(Date.now() + 60 * 1000)
-        if (isTokenExpired) {
+        const isTokenFresh = m.expiresAt && m.expiresAt > new Date(Date.now() + 60 * 1000)
+        if (isTokenFresh) {
+          console.log('Token is cached')
           return {
             ...m,
             url: `${process.env.B2_DOWNLOAD_URL}/file/chronex/${m.name}?Authorization=${m.downloadToken}`,
           }
         }
+        console.log("token ain't cached, generating new one")
         const data = await b2.getDownloadAuthorization({
           bucketId: process.env.B2_BUCKET_ID!,
           fileNamePrefix: m.name,
