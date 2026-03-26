@@ -1,5 +1,4 @@
 'use client'
-
 import {
   Sidebar,
   SidebarContent,
@@ -43,12 +42,20 @@ const authNavItems = [
 export function AppSidebar() {
   const pathname = usePathname()
 
-  const checkIsActive = (url: string) => {
-    if (url === '/') {
-      return pathname === url
-    }
-    return pathname?.startsWith(url)
+  const getBestActiveUrl = (urls: string[]) => {
+    if (!pathname) return null
+
+    const matches = urls.filter((url) => {
+      if (url === '/') return pathname === '/'
+      return pathname === url || pathname.startsWith(`${url}/`)
+    })
+
+    if (matches.length === 0) return null
+
+    return matches.sort((a, b) => b.length - a.length)[0]
   }
+
+  const activeUrl = getBestActiveUrl([...mainNavItems, ...authNavItems].map((item) => item.url))
 
   return (
     <Sidebar>
@@ -65,9 +72,9 @@ export function AppSidebar() {
             <SidebarMenu>
               {mainNavItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={checkIsActive(item.url)}>
+                  <SidebarMenuButton asChild isActive={activeUrl === item.url}>
                     <Link href={item.url}>
-                      <item.icon className="mr-2 h-4 w-4" />
+                      <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -76,16 +83,15 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
         <SidebarGroup>
           <SidebarGroupLabel>Account</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {authNavItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={checkIsActive(item.url)}>
+                  <SidebarMenuButton asChild isActive={activeUrl === item.url}>
                     <Link href={item.url}>
-                      <item.icon className="mr-2 h-4 w-4" />
+                      <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
