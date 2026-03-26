@@ -28,6 +28,9 @@ export default function LogoutPage() {
       } catch (err) {
         console.error(err)
         toast.error('Logout failed')
+      } finally {
+        localStorage.removeItem('workspaceId')
+        document.cookie = 'workspaceId=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
       }
     })
   }

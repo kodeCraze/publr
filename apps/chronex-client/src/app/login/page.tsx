@@ -31,7 +31,7 @@ export default function LoginPage() {
         console.error(err)
         toast.error('Login failed')
       } finally {
-        toast.success('Login successful, redirect to dashboard')
+        toast.success('Login successful, redirecting to dashboard')
       }
     })
   }

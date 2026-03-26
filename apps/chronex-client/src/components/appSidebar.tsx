@@ -14,7 +14,16 @@ import {
 } from '@/components/ui/sidebar'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, PenSquare, Image as ImageIcon, Key, LogOut, LogIn, PlusSquare } from 'lucide-react'
+import {
+  Home,
+  PenSquare,
+  Image as ImageIcon,
+  Key,
+  LogOut,
+  LogIn,
+  PlusSquare,
+  Briefcase,
+} from 'lucide-react'
 import Workspace from './workspace'
 
 const mainNavItems = [
@@ -23,6 +32,7 @@ const mainNavItems = [
   { title: 'Create Post', url: '/post/createPost', icon: PlusSquare },
   { title: 'Media', url: '/media', icon: ImageIcon },
   { title: 'Tokens', url: '/tokens', icon: Key },
+  { title: 'Workspace', url: '/workspace', icon: Briefcase },
 ]
 
 const authNavItems = [

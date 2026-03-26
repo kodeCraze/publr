@@ -76,6 +76,9 @@ importers:
       dotenv:
         specifier: ^17.3.1
         version: 17.3.1
+      drizzle-orm:
+        specifier: ^0.45.1
+        version: 0.45.1(@cloudflare/workers-types@4.20260313.1)(@neondatabase/serverless@1.0.2)(@types/pg@8.18.0)(kysely@0.28.12)(postgres@3.4.8)
       linkedin-api-client:
         specifier: ^0.3.0
         version: 0.3.0

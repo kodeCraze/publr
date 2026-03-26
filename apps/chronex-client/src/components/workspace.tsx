@@ -27,7 +27,6 @@ import {
 import { trpc } from '@/utils/trpc'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
-import { useRouter } from 'next/navigation'
 import { ChevronsUpDown, Plus, Briefcase } from 'lucide-react'
 
 // Helper for cookies
@@ -45,7 +44,6 @@ function setClientCookie(name: string, value: string) {
 }
 
 export default function Workspace() {
-  const router = useRouter()
   const { isMobile } = useSidebar()
 
   const { data: workspaces, isLoading } = trpc.workspace.getWorkspaces.useQuery()
@@ -85,7 +83,7 @@ export default function Workspace() {
     localStorage.setItem('workspaceId', id)
     setClientCookie('workspaceId', id)
     setActiveWorkspaceId(id)
-    router.refresh()
+    window.location.reload()
   }
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -104,7 +102,7 @@ export default function Workspace() {
       setActiveWorkspaceId(newId)
       setOpen(false)
       setName('')
-      router.refresh()
+      window.location.reload()
     } catch (err) {
       console.error(err)
     }
