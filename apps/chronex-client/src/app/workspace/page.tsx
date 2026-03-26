@@ -1,8 +1,7 @@
 'use client'
 
-import Workspace from '@/components/workspace'
 const Page = () => {
-  return <Workspace />
+  return <div>hello</div>
 }
 
 export default Page

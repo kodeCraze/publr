@@ -4,8 +4,6 @@ import './globals.css'
 import { TRPCProvider } from './providers'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
-import { AppSidebar } from '@/components/appSidebar'
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
@@ -30,17 +28,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <TRPCProvider>
-          <TooltipProvider>
-            <SidebarProvider>
-              <AppSidebar />
-              <div className="flex h-screen flex-1 flex-col overflow-hidden">
-                <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4">
-                  <SidebarTrigger className="-ml-1" />
-                </header>
-                <div className="flex-1 overflow-y-auto">{children}</div>
-              </div>
-            </SidebarProvider>
-          </TooltipProvider>
+          <TooltipProvider>{children}</TooltipProvider>
         </TRPCProvider>
         <Toaster />
       </body>

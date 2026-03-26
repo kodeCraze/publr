@@ -14,23 +14,14 @@ import {
 } from '@/components/ui/sidebar'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import {
-  Home,
-  PenSquare,
-  Image as ImageIcon,
-  Briefcase,
-  Key,
-  LogOut,
-  LogIn,
-  PlusSquare,
-} from 'lucide-react'
+import { Home, PenSquare, Image as ImageIcon, Key, LogOut, LogIn, PlusSquare } from 'lucide-react'
+import Workspace from './workspace'
 
 const mainNavItems = [
   { title: 'Home', url: '/', icon: Home },
   { title: 'Posts', url: '/post', icon: PenSquare },
   { title: 'Create Post', url: '/post/createPost', icon: PlusSquare },
   { title: 'Media', url: '/media', icon: ImageIcon },
-  { title: 'Workspace', url: '/workspace', icon: Briefcase },
   { title: 'Tokens', url: '/tokens', icon: Key },
 ]
 
@@ -55,6 +46,7 @@ export function AppSidebar() {
         <div className="flex items-center px-4 py-3">
           <span className="font-geist-sans text-xl font-bold tracking-tight">Chronex</span>
         </div>
+        <Workspace />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
