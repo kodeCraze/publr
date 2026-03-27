@@ -90,7 +90,7 @@ export default function LogoutPage() {
 
           <Button
             type="button"
-            className="h-11 cursor-pointer rounded-xl bg-foreground text-background hover:bg-foreground/70 hover:text-background"
+            className="h-11 cursor-pointer rounded-xl bg-primary text-background hover:bg-primary/70 hover:text-background"
             onClick={handleLogout}
             disabled={isLogoutPending}
           >
