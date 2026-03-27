@@ -3,7 +3,7 @@ import { updatePostStatus } from './utils/updatePostStatus'
 export async function decideStatus(
   db: DB,
   postId: number,
-  currentPlatform: 'instagram' | 'linkedin' | 'threads' | 'discord' | 'slack',
+  _currentPlatform: 'instagram' | 'linkedin' | 'threads' | 'discord' | 'slack',
 ) {
   const postData = await db.query.post.findFirst({
     where: (t, { eq }) => eq(t.id, postId),
@@ -15,20 +15,31 @@ export async function decideStatus(
       },
     },
   })
-  const isfirstPlatform = postData?.platforms[0] === currentPlatform
-  if (isfirstPlatform) {
+
+  if (!postData || postData.platformPosts.length === 0) {
+    return
+  }
+
+  const statuses = postData.platformPosts.map((pp) => pp.status)
+  const allPublished = statuses.every((status) => status === 'published')
+
+  if (allPublished) {
+    await updatePostStatus(db, postId, 'published')
+    return
+  }
+
+  const hasInFlightStatuses = statuses.some(
+    (status) => status === 'pending' || status === 'processing',
+  )
+
+  if (hasInFlightStatuses) {
     await updatePostStatus(db, postId, 'publishing')
     return
   }
-  const isLastPlatform = postData?.platforms[postData.platforms.length - 1] === currentPlatform
-  if (!isLastPlatform) {
-    return
-  }
-  const allPreviousPublished =
-    postData?.platformPosts.some((pp) => pp.status === 'published') ?? false
-  if (allPreviousPublished) {
-    await updatePostStatus(db, postId, 'published')
-  } else {
+
+  const hasFailedStatus = statuses.some((status) => status === 'failed')
+
+  if (hasFailedStatus) {
     await updatePostStatus(db, postId, 'failed')
   }
 }

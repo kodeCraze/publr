@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 import * as React from 'react'
 import { trpc } from '@/utils/trpc'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -624,6 +625,7 @@ function buildPlatformPayload(pd: PlatformFormData): Record<string, unknown> {
 // ─── Main Page ────────────────────────────────────────────────────────
 export default function CreatePostForm() {
   const utils = trpc.useUtils()
+  const router = useRouter()
 
   const { data: media, isLoading: mediaLoading } = trpc.user.getMedia.useQuery()
   const { data: userData, isLoading: userLoading } = trpc.user.getUser.useQuery()
@@ -796,6 +798,7 @@ export default function CreatePostForm() {
       })
       await utils.post.getUserPosts.invalidate()
       toast.success('Post created successfully')
+      router.push('/post')
     } catch (err) {
       setErrors([err instanceof Error ? err.message : 'Failed to create post'])
     } finally {
@@ -1172,11 +1175,11 @@ export default function CreatePostForm() {
                           </div>
                           <span className="text-sm font-medium">{config.label}</span>
                           {isReady ? (
-                            <div className="flex size-4 items-center justify-center rounded-full bg-emerald-500/15">
-                              <Check className="size-2.5 text-emerald-600 dark:text-emerald-400" />
+                            <div className="flex size-4 items-center justify-center rounded-full bg-primary/15">
+                              <Check className="size-2.5 text-primary" />
                             </div>
                           ) : ct?.requiresMedia ? (
-                            <div className="size-1.5 rounded-full bg-amber-500" />
+                            <div className="size-1.5 rounded-full bg-muted-foreground" />
                           ) : null}
                         </TabsTrigger>
                       )

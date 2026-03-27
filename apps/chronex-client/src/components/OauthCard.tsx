@@ -58,11 +58,11 @@ const OauthCard = ({
   const displayName = username?.trim() || 'No account connected'
 
   return (
-    <Card className="w-[300px] rounded-2xl transition-shadow">
-      <CardHeader className="space-y-4 pb-3">
+    <Card className="h-full rounded-xl border-border/70 transition-shadow hover:shadow-sm">
+      <CardHeader className="flex flex-col gap-4 pb-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl border bg-background">
+            <div className="flex size-11 items-center justify-center rounded-xl border border-border/70 bg-background">
               <IconRenderer name={platformname} />
             </div>
 
@@ -78,7 +78,7 @@ const OauthCard = ({
 
           <div
             className={`rounded-full border px-2.5 py-1 text-xs font-medium ${
-              isVerified ? 'bg-muted' : 'bg-background'
+              isVerified ? 'border-primary/30 bg-primary/10 text-primary' : 'bg-background'
             }`}
           >
             {isVerified ? 'Active' : 'Idle'}

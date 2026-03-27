@@ -115,7 +115,7 @@ function PreviewModal({ item, onClose }: { item: MediaItem; onClose: () => void 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       {/* backdrop */}
-      <div className="absolute inset-0 animate-in bg-black/80 backdrop-blur-sm duration-200 fade-in" />
+      <div className="absolute inset-0 animate-in bg-background/80 backdrop-blur-sm duration-200 fade-in" />
 
       {/* content */}
       <div
@@ -125,14 +125,14 @@ function PreviewModal({ item, onClose }: { item: MediaItem; onClose: () => void 
         {/* close button */}
         <button
           onClick={onClose}
-          className="absolute -top-3 -right-3 z-20 flex size-9 cursor-pointer items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md transition-all hover:scale-110 hover:bg-white/20"
+          className="absolute -top-3 -right-3 z-20 flex size-9 cursor-pointer items-center justify-center rounded-full border border-border/60 bg-card text-foreground backdrop-blur-md transition-all hover:scale-110 hover:bg-accent"
           aria-label="Close preview"
         >
           <X className="size-5" />
         </button>
 
         {/* media */}
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl">
+        <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-2xl">
           {item.type === 'video' ? (
             <video
               src={item.url}
@@ -153,14 +153,12 @@ function PreviewModal({ item, onClose }: { item: MediaItem; onClose: () => void 
         </div>
 
         {/* info bar */}
-        <div className="flex w-full items-center justify-between rounded-xl bg-white/5 px-5 py-3 backdrop-blur-md">
+        <div className="flex w-full items-center justify-between rounded-xl border border-border/70 bg-card px-5 py-3 backdrop-blur-md">
           <div className="flex items-center gap-3">
             <div
               className={cn(
                 'flex size-8 items-center justify-center rounded-lg',
-                item.type === 'video'
-                  ? 'bg-rose-500/20 text-rose-400'
-                  : 'bg-violet-500/20 text-violet-400',
+                item.type === 'video' ? 'bg-primary/10 text-primary' : 'bg-primary/10 text-primary',
               )}
             >
               {item.type === 'video' ? (
@@ -170,8 +168,8 @@ function PreviewModal({ item, onClose }: { item: MediaItem; onClose: () => void 
               )}
             </div>
             <div>
-              <p className="text-sm font-medium text-white">{truncateName(item.name, 50)}</p>
-              <p className="text-xs text-white/50">
+              <p className="text-sm font-medium text-foreground">{truncateName(item.name, 50)}</p>
+              <p className="text-xs text-muted-foreground">
                 {getFileExtension(item.name)} · {formatDate(item.createdAt)}
               </p>
             </div>
@@ -180,7 +178,7 @@ function PreviewModal({ item, onClose }: { item: MediaItem; onClose: () => void 
             href={item.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-lg bg-white/10 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/20"
+            className="rounded-lg bg-primary/10 px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/20"
           >
             Open in new tab
           </a>
@@ -271,11 +269,11 @@ const MediaCard = React.memo(function MediaCard({
         )}
 
         {/* hover overlay */}
-        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        <div className="absolute inset-0 bg-linear-to-t from-background/70 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
         {/* hover action */}
         <div className="absolute right-2 bottom-2 flex items-center gap-1.5 opacity-0 transition-all duration-300 group-hover:opacity-100">
-          <div className="flex items-center gap-1 rounded-lg bg-white/20 px-2.5 py-1.5 text-xs font-medium text-white backdrop-blur-md">
+          <div className="flex items-center gap-1 rounded-lg bg-card/90 px-2.5 py-1.5 text-xs font-medium text-foreground backdrop-blur-md">
             <Eye className="size-3.5" />
             Preview
           </div>
@@ -285,7 +283,7 @@ const MediaCard = React.memo(function MediaCard({
         <div
           className={cn(
             'absolute top-2 left-2 flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium backdrop-blur-md',
-            isVideo ? 'bg-rose-500/20 text-rose-200' : 'bg-violet-500/20 text-violet-200',
+            isVideo ? 'bg-primary/20 text-primary' : 'bg-primary/20 text-primary',
           )}
         >
           {isVideo ? <Film className="size-3" /> : <ImageIcon className="size-3" />}
@@ -358,7 +356,7 @@ const MediaRow = React.memo(function MediaRow({
           <span
             className={cn(
               'inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium',
-              isVideo ? 'bg-rose-500/10 text-rose-500' : 'bg-violet-500/10 text-violet-500',
+              isVideo ? 'bg-primary/10 text-primary' : 'bg-primary/10 text-primary',
             )}
           >
             {isVideo ? <Film className="size-3" /> : <ImageIcon className="size-3" />}

@@ -1,22 +1,14 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { TRPCProvider } from './providers'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-})
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-})
+import { jetBrainsMono } from '@/lib/fonts'
 
 export const metadata: Metadata = {
   title: 'Chronex',
-  description: 'Campaign scheduling and platform-aware publishing from one control surface.',
+  description:
+    'A social media management tool built for teams, designed to streamline content scheduling and collaboration across multiple platforms.',
 }
 
 export default function RootLayout({
@@ -26,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${jetBrainsMono.variable} antialiased`}>
         <TRPCProvider>
           <TooltipProvider>{children}</TooltipProvider>
         </TRPCProvider>
