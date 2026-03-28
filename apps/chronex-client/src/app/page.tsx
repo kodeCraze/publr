@@ -2,12 +2,23 @@
 
 import Link from 'next/link'
 import { motion } from 'motion/react'
-import { ArrowRight, CalendarClock, Layers3, ShieldCheck, ArrowUpRight } from 'lucide-react'
+import {
+  ArrowRight,
+  CalendarClock,
+  CircleDollarSign,
+  Github,
+  Heart,
+  Layers3,
+  ShieldCheck,
+  ArrowUpRight,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { BrandName } from '@/components/logo/brandName'
 import { ThemeToggle } from '@/components/themeToggle'
 import IconRenderer from '@/lib/logoMapping'
 import { PlatformId } from '@/config/platforms'
+import XLogoIcon from '@/components/logo/x'
 
 /* ─── Data ─── */
 const PLATFORMS: Array<{ name: PlatformId; color: string }> = [
@@ -84,6 +95,35 @@ const STATUS_STYLES: Record<string, string> = {
   sent: 'bg-green-500/15 text-green-600 dark:text-green-400 font-semibold',
 }
 
+const SOCIAL_LINKS = {
+  github: process.env.NEXT_PUBLIC_GITHUB_URL,
+  x: process.env.NEXT_PUBLIC_X_URL,
+  sponsors: process.env.NEXT_PUBLIC_GITHUB_SPONSORS_URL,
+  kofi: process.env.NEXT_PUBLIC_KOFI_URL,
+  paypal: process.env.NEXT_PUBLIC_PAYPAL_URL,
+}
+
+const SUPPORT_LINKS = [
+  {
+    href: SOCIAL_LINKS.sponsors,
+    label: 'GitHub Sponsors',
+    description: 'Sponsor ongoing Chronex development',
+    icon: Github,
+  },
+  {
+    href: SOCIAL_LINKS.kofi,
+    label: 'Ko-fi',
+    description: 'Tip the project with a quick coffee',
+    icon: Heart,
+  },
+  {
+    href: SOCIAL_LINKS.paypal,
+    label: 'PayPal',
+    description: 'Send support directly via PayPal',
+    icon: CircleDollarSign,
+  },
+]
+
 /* ─── Component ─── */
 export default function HomePage() {
   return (
@@ -115,21 +155,39 @@ export default function HomePage() {
 
         {/* ── Header ── */}
         <header className="sticky top-0 left-0 z-50 border-b border-border/80 bg-background/85 backdrop-blur-md">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+          <div className="mx-auto flex max-w-full items-center justify-between px-20 py-4">
             <Link href="/" className="brand-wrap">
               <BrandName />
             </Link>
 
             <div className="flex items-center gap-2">
+              <a
+                href={SOCIAL_LINKS.github}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Chronex on GitHub"
+                className="inline-flex size-9 items-center justify-center rounded-full border border-border/70 bg-background/60 text-foreground/65 transition-all hover:border-primary/40 hover:text-foreground"
+              >
+                <Github className="size-4" />
+              </a>
+              <a
+                href={SOCIAL_LINKS.x}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Chronex on X"
+                className="inline-flex size-9 items-center justify-center rounded-full border border-border/70 bg-background/60 text-foreground/65 transition-all hover:border-primary/40 hover:text-foreground"
+              >
+                <XLogoIcon size={14} />
+              </a>
               <ThemeToggle />
-              <Button
+              {/* <Button
                 asChild
                 variant="ghost"
                 size="sm"
                 className="text-foreground/70 hover:text-foreground"
               >
                 <Link href="/login">Log in</Link>
-              </Button>
+              </Button> */}
               <Button asChild size="sm" className="gap-1.5">
                 <Link href="/post/createPost">
                   Open Studio
@@ -405,6 +463,61 @@ export default function HomePage() {
             </div>
           </motion.div>
         </section>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.35 }}
+          className="fixed right-5 bottom-5 z-[60]"
+        >
+          <HoverCard openDelay={120} closeDelay={120}>
+            <HoverCardTrigger asChild>
+              <button
+                type="button"
+                aria-label="Open support links"
+                className="inline-flex size-14 items-center justify-center rounded-full border border-primary/25 bg-card/95 text-primary shadow-[0_18px_45px_-20px_hsl(var(--foreground)/0.45)] backdrop-blur-md transition-all hover:-translate-y-1 hover:border-primary/45 hover:shadow-[0_22px_55px_-22px_hsl(var(--primary)/0.45)]"
+              >
+                <Heart className="size-5 fill-current" />
+              </button>
+            </HoverCardTrigger>
+            <HoverCardContent
+              align="end"
+              side="top"
+              sideOffset={14}
+              className="w-[290px] rounded-2xl border border-border/80 bg-card/95 p-3 shadow-[0_24px_60px_-26px_hsl(var(--foreground)/0.45)] backdrop-blur-xl"
+            >
+              <div className="flex flex-col gap-2">
+                <div className="px-1 pb-1">
+                  <p className="font-mono text-[11px] font-semibold tracking-[0.14em] text-primary uppercase">
+                    Support Chronex
+                  </p>
+                  <p className="mt-1 text-sm text-foreground/65">
+                    Pick a platform you like and help keep the project moving.
+                  </p>
+                </div>
+                {SUPPORT_LINKS.map(({ href, label, description, icon: Icon }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-3 rounded-xl border border-transparent px-3 py-3 transition-colors hover:border-primary/20 hover:bg-primary/6"
+                  >
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/12 text-primary">
+                      <Icon className="size-[18px]" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-sm font-semibold text-foreground">{label}</span>
+                      <span className="block truncate text-xs text-foreground/55">
+                        {description}
+                      </span>
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </HoverCardContent>
+          </HoverCard>
+        </motion.div>
       </main>
     </>
   )
