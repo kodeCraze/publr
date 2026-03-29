@@ -13,7 +13,6 @@ import { user } from './auth'
 import { workspace } from './workspace'
 import { platformEnum } from './enums'
 
-// Auth tokens for social platforms
 export const authToken = pgTable(
   'auth_tokens',
   {

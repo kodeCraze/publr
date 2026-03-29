@@ -1,15 +1,10 @@
-/**
- * Static config that maps each platform to its available content types.
- * Used to drive platform & content-type selection UI.
- */
-
 export type PlatformId = 'instagram' | 'linkedin' | 'threads' | 'slack' | 'discord' | 'telegram'
 
 export interface ContentType {
   id: string
   label: string
   requiresMedia: boolean
-  /** min number of media files required (0 = optional) */
+
   minMedia: number
   maxMedia: number
 }
@@ -199,13 +194,11 @@ export const PLATFORM_CONFIG: PlatformConfig[] = [
   },
 ]
 
-/** Lookup map: platform id → config */
 export const PLATFORM_MAP = Object.fromEntries(PLATFORM_CONFIG.map((p) => [p.id, p])) as Record<
   PlatformId,
   PlatformConfig
 >
 
-/** Returns the content-type config for a given platform + type pair */
 export function getContentTypeConfig(platform: PlatformId, type: string): ContentType | undefined {
   return PLATFORM_MAP[platform]?.contentTypes.find((ct) => ct.id === type)
 }

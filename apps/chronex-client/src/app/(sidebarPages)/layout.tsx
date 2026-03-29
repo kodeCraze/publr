@@ -42,13 +42,7 @@ export default function SidebarLayout({
             <div className="flex items-center gap-3.5">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <SidebarTrigger className="-ml-1 cursor-pointer rounded-md border border-transparent transition-colors hover:border-border hover:bg-muted/60" />
-                {/* <Image
-                  src="/logo.png"
-                  alt="Chronex logo"
-                  width={28}
-                  height={28}
-                  className="object-contain"
-                /> */}
+                {}
               </div>
               <span className="chronex-brand text-xl font-semibold tracking-tight">
                 <BrandName />
@@ -62,15 +56,6 @@ export default function SidebarLayout({
                   <Spinner />
                 </div>
               ) : user ? (
-                // <div className="flex items-center gap-2.5   bg-card px-2.5 py-1.5 shadow-sm">
-                //   {avatar}
-                //   <div className="hidden flex-col leading-tight sm:flex">
-                //     <span className="text-sm font-medium tracking-tight">
-                //       {user.name ?? 'Unknown user'}
-                //     </span>
-                //     <span className="text-[11px] text-muted-foreground">{user.email}</span>
-                //   </div>
-                // </div>
                 <UserMenu user={user} avatar={avatar} />
               ) : (
                 <span className="text-sm text-muted-foreground">Not signed in</span>

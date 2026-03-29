@@ -20,7 +20,6 @@ import IconRenderer from '@/lib/logoMapping'
 import { PlatformId } from '@/config/platforms'
 import XLogoIcon from '@/components/logo/x'
 
-/* ─── Data ─── */
 const PLATFORMS: Array<{ name: PlatformId; color: string }> = [
   { name: 'instagram', color: '#E1306C' },
   { name: 'threads', color: '#888888' },
@@ -124,7 +123,6 @@ const SUPPORT_LINKS = [
   },
 ]
 
-/* ─── Component ─── */
 export default function HomePage() {
   return (
     <>
@@ -147,13 +145,13 @@ export default function HomePage() {
       `}</style>
 
       <main className="relative min-h-screen bg-background">
-        {/* ── Ambient ── */}
+        {}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_-5%,hsl(var(--primary)/.2),transparent_65%)]"
         />
 
-        {/* ── Header ── */}
+        {}
         <header className="sticky top-0 left-0 z-50 border-b border-border/80 bg-background/85 backdrop-blur-md">
           <div className="mx-auto flex max-w-full items-center justify-between px-20 py-4">
             <Link href="/" className="brand-wrap">
@@ -180,14 +178,7 @@ export default function HomePage() {
                 <XLogoIcon size={14} />
               </a>
               <ThemeToggle />
-              {/* <Button
-                asChild
-                variant="ghost"
-                size="sm"
-                className="text-foreground/70 hover:text-foreground"
-              >
-                <Link href="/login">Log in</Link>
-              </Button> */}
+              {}
               <Button asChild size="sm" className="gap-1.5">
                 <Link href="/post/createPost">
                   Open Studio
@@ -198,11 +189,11 @@ export default function HomePage() {
           </div>
         </header>
 
-        {/* ── Hero ── */}
+        {}
         <section className="relative z-10 mx-auto grid max-w-6xl items-center gap-16 px-6 py-20 lg:grid-cols-[1.15fr_0.85fr] lg:py-20">
-          {/* Left */}
+          {}
           <div>
-            {/* Eyebrow */}
+            {}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -215,7 +206,7 @@ export default function HomePage() {
               </span>
             </motion.div>
 
-            {/* Headline */}
+            {}
             <motion.h1
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
@@ -237,7 +228,7 @@ export default function HomePage() {
               platform-aware content, and scheduling you can trust.
             </motion.p>
 
-            {/* CTA */}
+            {}
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
@@ -255,7 +246,7 @@ export default function HomePage() {
               </Button>
             </motion.div>
 
-            {/* Platform pills */}
+            {}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -274,16 +265,16 @@ export default function HomePage() {
             </motion.div>
           </div>
 
-          {/* Right – Schedule Preview */}
+          {}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.12 }}
             className="flex flex-col gap-3"
           >
-            {/* Schedule card */}
+            {}
             <div className="overflow-hidden rounded-2xl border border-border/85 bg-card/95 shadow-sm backdrop-blur-sm">
-              {/* Card header */}
+              {}
               <div className="flex items-center justify-between border-b border-border/75 px-5 py-3.5">
                 <div>
                   <p className="mb-0.5 font-mono text-[11px] font-semibold tracking-[.13em] text-primary uppercase">
@@ -297,7 +288,7 @@ export default function HomePage() {
                 </span>
               </div>
 
-              {/* Schedule rows */}
+              {}
               <div className="divide-y divide-border/50">
                 {SCHEDULE.map((item, i) => (
                   <div
@@ -328,7 +319,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Stats card */}
+            {}
             <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border/85 bg-border/80 shadow-sm">
               {[
                 { value: '5+', label: 'Platform Integrations' },
@@ -343,7 +334,7 @@ export default function HomePage() {
           </motion.div>
         </section>
 
-        {/* ── Ticker ── */}
+        {}
         <div className="relative z-10 overflow-hidden border-y border-border/75 py-4">
           <div
             aria-hidden
@@ -368,7 +359,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* ── Features ── */}
+        {}
         <section className="relative z-10 mx-auto max-w-6xl px-6 py-20 lg:py-20">
           <div className="mb-14 flex flex-col gap-2">
             <span className="font-mono text-[12px] font-semibold tracking-[.13em] text-primary uppercase">
@@ -391,12 +382,12 @@ export default function HomePage() {
                 transition={{ duration: 0.45, delay: i * 0.08 }}
                 className="feature-row grid grid-cols-[56px_1fr_auto] items-start gap-8 px-8 py-8 md:items-center"
               >
-                {/* Number */}
+                {}
                 <span className="pt-0.5 font-mono text-[13px] font-semibold text-foreground/40">
                   {num}
                 </span>
 
-                {/* Text */}
+                {}
                 <div>
                   <p className="mb-1.5 text-[17px] font-semibold tracking-[-0.02em] text-foreground">
                     {title}
@@ -404,7 +395,7 @@ export default function HomePage() {
                   <p className="max-w-lg text-[14px] leading-relaxed text-foreground/60">{desc}</p>
                 </div>
 
-                {/* Icon */}
+                {}
                 <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-primary/25 bg-primary/10 text-primary">
                   <Icon className="size-5" />
                 </div>
@@ -413,7 +404,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── Bottom CTA ── */}
+        {}
         <section className="relative z-10 mx-auto max-w-6xl px-6 pb-18">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -422,7 +413,7 @@ export default function HomePage() {
             transition={{ duration: 0.5 }}
             className="relative overflow-hidden rounded-2xl border border-border/85 bg-card/90 px-10 py-14 shadow-sm md:px-16"
           >
-            {/* Ambient inside CTA */}
+            {}
             <div
               aria-hidden
               className="pointer-events-none absolute top-0 right-0 h-full w-1/2 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/.15),transparent_60%)]"

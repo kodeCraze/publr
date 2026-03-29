@@ -38,7 +38,6 @@ export const validateMediaForPlatform = ({
           `Media validation failed for platform: ${platform} with error: ${(error as Error).message}`,
         )
       }
-      // item is now narrowed to variants that have fileIds
     }
   }
 }

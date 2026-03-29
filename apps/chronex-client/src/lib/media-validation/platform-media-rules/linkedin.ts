@@ -1,25 +1,16 @@
 import { z } from 'zod'
 
-// ─── Constants (in MB) ────────────────────────────────────────────────────────
-const MAX_IMAGE_SIZE = 20 // 20 MB
-const MAX_VIDEO_SIZE = 200 // 200 MB
+const MAX_IMAGE_SIZE = 20
+const MAX_VIDEO_SIZE = 200
 
-// ─── Aspect Ratios (official LinkedIn docs) ───────────────────────────────────
-// Source: https://www.linkedin.com/help/lms/answer/a424737
-// Images: no explicit API constraint
-// Videos: 9:16 (0.5625) to 16:9 (1.7778)
-const LI_VIDEO_MIN_RATIO = 9 / 16 // 0.5625 — 9:16 vertical
-const LI_VIDEO_MAX_RATIO = 16 / 9 // 1.7778 — 16:9 horizontal
+const LI_VIDEO_MIN_RATIO = 9 / 16
+const LI_VIDEO_MAX_RATIO = 16 / 9
 
-/** Parse an "x:y" aspect-ratio string into a decimal (x / y). */
 function parseRatio(ar: string): number {
   const [w, h] = ar.split(':').map(Number)
   return w / h
 }
 
-// ─── Per-type rules ───────────────────────────────────────────────────────────
-
-/** Single image post */
 const image = z
   .array(
     z.object({
@@ -47,7 +38,6 @@ const image = z
   )
   .length(1, 'LinkedIn image posts require exactly 1 image')
 
-/** Single video post */
 const video = z
   .array(
     z
@@ -90,7 +80,6 @@ const video = z
   )
   .length(1, 'LinkedIn video posts require exactly 1 video')
 
-/** Multi-asset post */
 const MultiPost = z
   .array(
     z.discriminatedUnion('type', [
@@ -119,5 +108,4 @@ const MultiPost = z
   .min(1, 'LinkedIn multi-posts require at least 1 media item')
   .max(20, 'LinkedIn multi-posts support up to 20 media items')
 
-// ─── Exported map ─────────────────────────────────────────────────────────────
 export const linkedin = { image, video, MultiPost }

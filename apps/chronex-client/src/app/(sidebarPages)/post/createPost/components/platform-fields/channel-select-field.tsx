@@ -34,7 +34,7 @@ export function ChannelSelectField({ platform, value, onChange }: Props) {
         <SelectContent>
           {channels?.map((channel) => (
             <SelectItem key={channel.id} value={channel.id}>
-              #{channel.name}
+              {channel.name}
             </SelectItem>
           ))}
         </SelectContent>

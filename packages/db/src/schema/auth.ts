@@ -3,7 +3,7 @@ import { relations } from 'drizzle-orm'
 import { workspace } from './workspace'
 import { authToken } from './auth-token'
 import { post } from './posts'
-// Users table
+
 export const user = pgTable('users', {
   id: text('id').primaryKey(),
   name: text('name'),
@@ -20,7 +20,6 @@ export const userRelations = relations(user, ({ many }) => ({
   posts: many(post),
 }))
 
-// Sessions table
 export const session = pgTable('sessions', {
   id: text('id').primaryKey(),
   userId: text('user_id').notNull(),
@@ -31,7 +30,7 @@ export const session = pgTable('sessions', {
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 })
-// Accounts table
+
 export const account = pgTable('accounts', {
   id: text('id').primaryKey(),
   userId: text('user_id').notNull(),
@@ -50,7 +49,6 @@ export const account = pgTable('accounts', {
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 })
 
-// Verification table
 export const verification = pgTable('verification', {
   id: text('id').primaryKey(),
   identifier: text('identifier').notNull(),

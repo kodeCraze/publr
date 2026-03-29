@@ -29,7 +29,6 @@ import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { ChevronsUpDown, Plus, Briefcase } from 'lucide-react'
 
-// Helper for cookies
 function getClientCookie(name: string) {
   if (typeof document === 'undefined') return null
   const value = `; ${document.cookie}`

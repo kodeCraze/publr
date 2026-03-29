@@ -1,5 +1,5 @@
 import { workspaceProcedure } from '@/server/trpc'
-import { authToken, eq, telegramChannels } from '@repo/db'
+import { authToken, eq } from '@repo/db'
 import { TRPCError } from '@trpc/server'
 
 export const telegramOAuthProcedure = workspaceProcedure.mutation(async ({ ctx }) => {
@@ -19,7 +19,6 @@ export const telegramOAuthProcedure = workspaceProcedure.mutation(async ({ ctx }
     })
   }
 
-  await ctx.db.delete(telegramChannels).where(eq(telegramChannels.workspaceId, ctx.workspaceId))
   await ctx.db.delete(authToken).where(eq(authToken.id, token.id))
 
   return { success: true }

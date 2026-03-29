@@ -3,7 +3,6 @@
 import { useCallback } from 'react'
 import type { PlatformId } from '@/config/platforms'
 
-// ─── Types ────────────────────────────────────────────────────────────
 export interface PlatformSelection {
   platform: PlatformId
   contentType: string
@@ -11,7 +10,7 @@ export interface PlatformSelection {
 
 export interface PostDraft {
   title: string
-  scheduledAt: string // ISO string for easy serialization
+  scheduledAt: string
   platforms: PlatformSelection[]
   selectedMediaIds: string[]
 }
@@ -40,7 +39,6 @@ export interface PlatformFieldData {
 const DRAFT_KEY = 'chronex_post_draft'
 const PLATFORM_DATA_KEY = 'chronex_platform_data'
 
-// ─── Hook ─────────────────────────────────────────────────────────────
 export function usePostDraft() {
   const saveDraft = useCallback((draft: PostDraft) => {
     localStorage.setItem(DRAFT_KEY, JSON.stringify(draft))

@@ -1,4 +1,3 @@
-// server/api/routers/disconnect.ts
 import { createTRPCRouter } from '../trpc'
 import { instagramOAuthProcedure } from '../procedures/deOauth/instagram'
 import { threadsOAuthProcedure } from '../procedures/deOauth/threads'

@@ -186,10 +186,8 @@ export const SlackFile = async (payload: PlatformJobPayload, env: Env): Promise<
     if (!channelId) throw new Error('No Slack channel ID specified')
     if (!token.profileName) throw new Error('No Slack workspace name specified')
 
-    // Post caption first to get a real ts
     const ts = await postMessage(token, channelId, data.caption)
 
-    // Upload files into the same channel
     const mediaItems = await fetchMediaMany(db, data.fileIds, env)
     for (let i = 0; i < mediaItems.length; i++) {
       const item = mediaItems[i]!

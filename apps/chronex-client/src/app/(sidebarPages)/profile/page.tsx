@@ -54,11 +54,11 @@ export default function ProfilePage() {
 
   return (
     <main className="mx-auto max-w-2xl space-y-4 px-4 py-8">
-      {/* Identity card */}
+      {}
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
-            {/* Avatar */}
+            {}
             <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-lg font-semibold text-muted-foreground">
               {user.image ? (
                 <Image
@@ -74,7 +74,7 @@ export default function ProfilePage() {
               )}
             </div>
 
-            {/* Name + badge */}
+            {}
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="truncate text-xl font-semibold tracking-tight">
@@ -88,7 +88,7 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
 
-      {/* Account details */}
+      {}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Account details</CardTitle>
@@ -102,7 +102,7 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
 
-      {/* Actions */}
+      {}
       <div className="flex gap-2">
         <Button variant="outline" className="flex-1" onClick={() => router.push('/post')}>
           Dashboard

@@ -2,10 +2,6 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { auth } from '@/config/authInstance'
 
-function matchesAny(pathname: string, routes: string[]) {
-  return routes.some((route) => pathname === route || pathname.startsWith(route + '/'))
-}
-
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 

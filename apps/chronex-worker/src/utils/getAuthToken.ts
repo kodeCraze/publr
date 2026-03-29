@@ -1,8 +1,5 @@
 import { DB } from '@repo/db'
 
-/**
- * Supported platform types that match the `platform` enum in the DB.
- */
 export type Platform = 'instagram' | 'linkedin' | 'threads' | 'discord' | 'slack' | 'telegram'
 
 export async function getAuthToken(db: DB, workspaceId: number, platform: Platform) {

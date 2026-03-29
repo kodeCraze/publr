@@ -13,7 +13,6 @@ function getConfig() {
   return { accountId, queueId, apiToken }
 }
 
-// ─── Verify Queue Exists ──────────────────────────────────────────────────────
 export async function verifyQueueConnection(): Promise<{
   success: boolean
   queueName?: string
@@ -71,13 +70,11 @@ export async function verifyQueueConnection(): Promise<{
   }
 }
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 export interface QueueMessage<T = unknown> {
   body: T
-  /** Optional content type. Default: "json" */
+
   content_type?: 'json' | 'text' | 'bytes'
-  /** Delay in seconds before the message becomes visible to consumers (max 43200 = 12h) */
+
   delay_seconds?: number
 }
 
@@ -86,7 +83,7 @@ export interface PlatformJobPayload {
   platformPostId: number
   platform: string
   workspaceId: number
-  scheduledAt: string // ISO string
+  scheduledAt: string
   metadata: unknown
 }
 

@@ -26,7 +26,7 @@ import {
 import { trpc } from '@/utils/trpc'
 import { Input } from './ui/input'
 import NextImage from 'next/image'
-// --- Types ---
+
 interface UploadedFile {
   id: string
   file: File
@@ -49,7 +49,6 @@ interface MediaDimensions {
   duration?: number
 }
 
-// --- Helpers ---
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 B'
   const k = 1024
@@ -112,15 +111,6 @@ function getMediaDimensions(file: File): Promise<MediaDimensions> {
   })
 }
 
-/**
- * Upload a single file to B2 using fetch.
- *
- * Why not XHR? The only reason XHR was used was for upload progress via
- * xhr.upload.onprogress. fetch() doesn't expose upload progress (the Streams
- * API workaround has poor browser support and adds a lot of complexity for
- * little gain). An indeterminate spinner during upload is a better UX tradeoff
- * than the complexity of keeping XHR around just for a progress percentage.
- */
 async function uploadFileToB2(
   file: File,
   uploadUrl: string,
@@ -148,14 +138,11 @@ async function uploadFileToB2(
   })
 
   if (!response.ok) {
-    // B2 returns a JSON error body, surface it if possible
     let detail = ''
     try {
       const err = await response.json()
       detail = err.message ? `: ${err.message}` : ''
-    } catch {
-      // ignore parse failure
-    }
+    } catch {}
     throw new Error(`B2 upload failed (${response.status})${detail}`)
   }
 
@@ -163,7 +150,6 @@ async function uploadFileToB2(
   return { fileId: data.fileId }
 }
 
-// --- Component ---
 export default function FileUpload({
   accept,
   multiple = true,
@@ -177,19 +163,6 @@ export default function FileUpload({
   const inputRef = React.useRef<HTMLInputElement>(null)
   const dragCounter = React.useRef(0)
 
-  /**
-   * useUtils gives us an imperative `.fetch()` for queries — the correct
-   * tRPC pattern when you need to call a query on demand (e.g. inside a
-   * click handler or loop) rather than on render.
-   *
-   * The old pattern (`useQuery({ enabled: false })` + `refetch()`) is an
-   * anti-pattern: refetch() shares state across concurrent calls, so
-   * uploading multiple files in a loop would cause them to race on the same
-   * query cache entry. Each B2 upload needs its own fresh URL anyway.
-   *
-   * If getUploadUrl has side effects (it does — it reserves a B2 upload slot),
-   * consider converting it to a mutation on the backend too.
-   */
   const utils = trpc.useUtils()
   const saveMedia = trpc.post.saveMedia.useMutation()
 
@@ -229,7 +202,6 @@ export default function FileUpload({
     [files.length, maxFiles, maxSizeMB],
   )
 
-  // -- Drag handlers --
   const handleDragEnter = React.useCallback((e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -295,7 +267,6 @@ export default function FileUpload({
           prev.map((f) => (f.id === pf.id ? { ...f, status: 'uploading' as const } : f)),
         )
 
-        // Fetch a fresh upload URL for each file — no shared query state
         const uploadData = await utils.post.getUploadUrl.fetch()
 
         const dimensions = await getMediaDimensions(pf.file)
@@ -350,7 +321,7 @@ export default function FileUpload({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Drop Zone */}
+        {}
         <div
           role="button"
           tabIndex={0}
@@ -411,7 +382,7 @@ export default function FileUpload({
           />
         </div>
 
-        {/* File List */}
+        {}
         {hasFiles && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -443,7 +414,7 @@ export default function FileUpload({
                       f.status === 'success' && 'border-border bg-muted/20',
                     )}
                   >
-                    {/* Preview / Icon */}
+                    {}
                     {f.preview ? (
                       <div className="relative size-10 shrink-0 overflow-hidden rounded-md">
                         <NextImage
@@ -465,7 +436,7 @@ export default function FileUpload({
                       </div>
                     )}
 
-                    {/* File info */}
+                    {}
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-foreground">{f.file.name}</p>
                       <div className="flex items-center gap-2">
@@ -493,7 +464,7 @@ export default function FileUpload({
                       </div>
                     </div>
 
-                    {/* Remove button */}
+                    {}
                     <Button
                       type="button"
                       onClick={(e) => {

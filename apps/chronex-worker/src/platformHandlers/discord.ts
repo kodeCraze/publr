@@ -111,10 +111,8 @@ async function executeWebhookMultipart(
   const { readable, writable } = new TransformStream()
   const writer = writable.getWriter()
 
-  // Produce the multipart body asynchronously while fetch consumes it
   const writePromise = (async () => {
     try {
-      // ── payload_json part ──────────────────────────────────────────────
       await writer.write(
         encoder.encode(
           `--${boundary}\r\n` +
@@ -125,12 +123,9 @@ async function executeWebhookMultipart(
         ),
       )
 
-      // ── file parts — streamed from source ─────────────────────────────
       for (let i = 0; i < files.length; i++) {
         const file = files[i]!
 
-        // Fetch the file — read Content-Type from response headers, then
-        // stream the body without ever buffering the whole file in memory.
         const res = await fetch(file.mediaUrl)
         if (!res.ok || !res.body) {
           throw new Error(
@@ -140,7 +135,6 @@ async function executeWebhookMultipart(
 
         const contentType = res.headers.get('content-type') ?? 'application/octet-stream'
 
-        // Part header
         await writer.write(
           encoder.encode(
             `--${boundary}\r\n` +
@@ -149,7 +143,6 @@ async function executeWebhookMultipart(
           ),
         )
 
-        // Pipe file body through
         const reader = res.body.getReader()
         for (;;) {
           const { done, value } = await reader.read()
@@ -157,11 +150,9 @@ async function executeWebhookMultipart(
           await writer.write(value)
         }
 
-        // CRLF after part body
         await writer.write(encoder.encode(`\r\n`))
       }
 
-      // Closing boundary
       await writer.write(encoder.encode(`--${boundary}--\r\n`))
       await writer.close()
     } catch (err) {
@@ -170,7 +161,6 @@ async function executeWebhookMultipart(
     }
   })()
 
-  // fetch consumes the readable stream concurrently with the writer
   const [res] = await Promise.all([
     fetch(`${webhookUrl}?wait=true`, {
       method: 'POST',
@@ -178,8 +168,6 @@ async function executeWebhookMultipart(
         'Content-Type': `multipart/form-data; boundary=${boundary}`,
       },
       body: readable,
-      // @ts-expect-error — duplex required for streaming request body in Workers
-      duplex: 'half',
     }),
     writePromise,
   ])
@@ -299,11 +287,10 @@ export const DiscordFile = async (payload: PlatformJobPayload, env: Env): Promis
 
     const mediaItems = await fetchMediaMany(db, data.fileIds, env)
 
-    // Build lightweight file descriptors — no binary download, just URLs
     const files = mediaItems.map((item, idx) => {
       const urlPath = new URL(item.url).pathname
       let name = urlPath.split('/').pop() ?? `file_${idx}`
-      // Ensure the filename has a proper extension so Discord renders it inline
+
       const ext = item.extension ?? 'bin'
       if (!name.includes('.')) {
         name = `${name}.${ext}`

@@ -13,12 +13,6 @@ type AuthToken = Awaited<ReturnType<typeof getAuthToken>>
 
 const THREADS_API = 'https://graph.threads.net/v1.0'
 
-/**
- * Create a media container on Threads.
- *
- * POST /{user-id}/threads
- * Docs: https://developers.facebook.com/docs/threads/posts
- */
 async function createContainer(
   token: AuthToken,
   body: Record<string, unknown>,
@@ -40,11 +34,6 @@ async function createContainer(
   return res.json() as Promise<{ id: string }>
 }
 
-/**
- * Publish a previously created Threads container.
- *
- * POST /{user-id}/threads_publish
- */
 async function publishContainer(token: AuthToken, creationId: string): Promise<{ id: string }> {
   const res = await fetch(`${THREADS_API}/${token.profileId}/threads_publish`, {
     method: 'POST',
@@ -63,12 +52,6 @@ async function publishContainer(token: AuthToken, creationId: string): Promise<{
   return res.json() as Promise<{ id: string }>
 }
 
-/**
- * Check if a Threads container has finished processing (for video).
- *
- * GET /{container-id}?fields=status
- * Returns: FINISHED | IN_PROGRESS | ERROR
- */
 async function checkContainerStatus(token: AuthToken, containerId: string): Promise<string> {
   const res = await fetch(
     `${THREADS_API}/${containerId}?fields=status&access_token=${token.accessToken}`,
@@ -77,9 +60,6 @@ async function checkContainerStatus(token: AuthToken, containerId: string): Prom
   return data.status
 }
 
-/**
- * Re-enqueue a job with delay for status polling.
- */
 async function enqueueStatusCheck(
   env: Env,
   payload: PlatformJobPayload,
@@ -97,11 +77,6 @@ async function enqueueStatusCheck(
   )
 }
 
-/**
- * Publish a TEXT-only post to Threads.
- *
- * Flow: create container (media_type=TEXT) → publish
- */
 export const ThreadsText = async (payload: PlatformJobPayload, env: Env): Promise<void> => {
   const db = (await import('@repo/db')).createDb(env.DATABASE_URL)
 
@@ -130,11 +105,6 @@ export const ThreadsText = async (payload: PlatformJobPayload, env: Env): Promis
   }
 }
 
-/**
- * Publish an IMAGE post to Threads.
- *
- * Flow: create container (media_type=IMAGE) → publish
- */
 export const ThreadsImage = async (payload: PlatformJobPayload, env: Env): Promise<void> => {
   const db = (await import('@repo/db')).createDb(env.DATABASE_URL)
 
@@ -165,15 +135,6 @@ export const ThreadsImage = async (payload: PlatformJobPayload, env: Env): Promi
   }
 }
 
-/**
- * Publish a VIDEO post to Threads.
- *
- * Phase 1 ("create"): create container (media_type=VIDEO) → re-enqueue for status
- * Phase 2 ("check_status"): check status →
- *   - FINISHED → publish → mark published
- *   - IN_PROGRESS → re-enqueue
- *   - ERROR → mark failed
- */
 export const ThreadsVideo = async (payload: PlatformJobPayload, env: Env): Promise<void> => {
   const db = (await import('@repo/db')).createDb(env.DATABASE_URL)
 

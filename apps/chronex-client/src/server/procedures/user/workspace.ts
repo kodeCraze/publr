@@ -12,7 +12,7 @@ export const createWorkspaceProcedure = authProcedure
   .mutation(async ({ ctx, input }) => {
     const { name } = input
     const userId = ctx.user.id
-    // Create a new workspace in the database
+
     const values: NewWorkspace = {
       name,
       createdBy: userId,

@@ -5,7 +5,6 @@ import { workspace } from './workspace'
 import { postStatusEnum, mediaTypeEnum } from './enums'
 import { platformPosts } from './platform-posts'
 
-// Posts table
 export const post = pgTable(
   'posts',
   {
@@ -37,7 +36,6 @@ export const post = pgTable(
   }),
 )
 
-// Post media - images/videos attached to posts
 export const postMedia = pgTable(
   'media',
   {

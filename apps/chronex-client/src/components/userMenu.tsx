@@ -1,7 +1,6 @@
 import { LogOut, User as UserIcon } from 'lucide-react'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 
 type UserMenuProps = {
   user: {
@@ -36,10 +35,7 @@ export function UserMenu({ user, avatar }: UserMenuProps) {
             Profile
           </button>
 
-          {/* <button className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-accent">
-            <Settings size={14} />
-            Settings
-          </button> */}
+          {}
 
           <button
             onClick={() => router.push('/signout')}

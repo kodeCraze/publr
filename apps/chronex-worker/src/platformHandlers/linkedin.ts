@@ -21,13 +21,6 @@ function authHeaders(token: AuthToken) {
   }
 }
 
-/**
- * Initialize an image upload via LinkedIn's Vector Assets API.
- * Returns the uploadUrl and the image asset URN.
- *
- * POST https://api.linkedin.com/rest/images?action=initializeUpload
- * Docs: https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/images-api
- */
 async function initImageUpload(token: AuthToken) {
   const res = await fetch(`${LI_API}/images?action=initializeUpload`, {
     method: 'POST',
@@ -58,13 +51,6 @@ async function initImageUpload(token: AuthToken) {
   }
 }
 
-/**
- * Initialize a video upload via LinkedIn's Video API.
- * Returns the uploadUrl(s) and the video asset URN.
- *
- * POST https://api.linkedin.com/rest/videos?action=initializeUpload
- * Docs: https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/videos-api
- */
 async function initVideoUpload(token: AuthToken, fileSizeBytes: number) {
   const res = await fetch(`${LI_API}/videos?action=initializeUpload`, {
     method: 'POST',
@@ -119,9 +105,6 @@ async function uploadBinaryStream(
     method: 'PUT',
     headers,
     body,
-    // @ts-expect-error — duplex required for streaming request body in fetch
-
-    duplex: 'half',
   })
 
   if (!res.ok) {
@@ -132,15 +115,6 @@ async function uploadBinaryStream(
   return res.headers.get('etag')
 }
 
-/**
- * Finalize a video upload on LinkedIn.
- *
- * This MUST be called after all parts have been uploaded. Without this step,
- * LinkedIn never processes the video and any post referencing it will be invisible.
- *
- * POST https://api.linkedin.com/rest/videos?action=finalizeUpload
- * Docs: https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/videos-api
- */
 async function finalizeVideoUpload(
   token: AuthToken,
   videoUrn: string,
@@ -168,12 +142,6 @@ async function finalizeVideoUpload(
   }
 }
 
-/**
- * Create a UGC post on LinkedIn.
- *
- * POST https://api.linkedin.com/rest/posts
- * Docs: https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/posts-api
- */
 async function createPost(token: AuthToken, body: Record<string, unknown>): Promise<string> {
   const res = await fetch(`${LI_API}/posts`, {
     method: 'POST',
@@ -193,11 +161,6 @@ async function createPost(token: AuthToken, body: Record<string, unknown>): Prom
   return postUrn
 }
 
-/**
- * Publish a TEXT-only post on LinkedIn.
- *
- * Flow: POST /posts with commentary only.
- */
 export const LinkedInText = async (payload: PlatformJobPayload, env: Env): Promise<void> => {
   const db = (await import('@repo/db')).createDb(env.DATABASE_URL)
 
@@ -231,11 +194,6 @@ export const LinkedInText = async (payload: PlatformJobPayload, env: Env): Promi
   }
 }
 
-/**
- * Publish a single IMAGE post on LinkedIn.
- *
- * Flow: initImageUpload → stream binary to uploadUrl → createPost with image URN.
- */
 export const LinkedInImage = async (payload: PlatformJobPayload, env: Env): Promise<void> => {
   const db = (await import('@repo/db')).createDb(env.DATABASE_URL)
 
@@ -339,14 +297,6 @@ export const LinkedInVideo = async (payload: PlatformJobPayload, env: Env): Prom
   }
 }
 
-/**
- * Publish a MULTI-IMAGE post on LinkedIn.
- *
- * Flow: For each image → initImageUpload + stream binary.
- *       Then createPost with multiple image URNs in content.multiImage.
- *
- * Docs: https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/multiimage-post-api
- */
 export const LinkedInMultiPost = async (payload: PlatformJobPayload, env: Env): Promise<void> => {
   const db = (await import('@repo/db')).createDb(env.DATABASE_URL)
 

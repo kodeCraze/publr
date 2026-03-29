@@ -1,10 +1,6 @@
 import z from 'zod'
 
 const captionMax2000 = z.string().max(2000, 'Discord messages cannot exceed 2000 characters')
-const embedCaptionMax6000 = z
-  .string()
-  .max(6000, 'Discord embeds cannot exceed 6000 combined characters')
-  .optional()
 const embedTitleMax256 = z
   .string()
   .max(256, 'Discord embed titles cannot exceed 256 characters')

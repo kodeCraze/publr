@@ -5,12 +5,11 @@ import { TRPCError } from '@trpc/server'
 import { post, postMedia, platformPosts } from '@repo/db'
 import type { NewPlatformPost } from '@repo/db'
 import type { NewPostMedia } from '@repo/db'
-import { fileInfo } from '@/types/zod/file'
 import { InputSchema } from '@/types/zod/platform'
 import { getMetaData } from '@/utils/fileFetch'
 import { validateMediaForPlatform } from '@/lib/media-validation/validator'
 import { queuePlatformJob } from '@/config/cloudflareQueue'
-import { and, count, desc, eq } from 'drizzle-orm'
+import { and, count, eq } from 'drizzle-orm'
 function gcd(a: number, b: number): number {
   return b === 0 ? a : gcd(b, a % b)
 }
@@ -99,7 +98,6 @@ export const saveMedia = workspaceProcedure
 
 export const createPost = workspaceProcedure.input(InputSchema).mutation(async ({ ctx, input }) => {
   try {
-    // Validate scheduledAt is not too far in the past
     const nowMs = Date.now()
     const scheduledMs = input.scheduledAt.getTime()
     if (scheduledMs < nowMs - 60_000) {
@@ -130,7 +128,6 @@ export const createPost = workspaceProcedure.input(InputSchema).mutation(async (
       })
       .returning()
 
-    // 2. Save platform entries
     const platformEntries: NewPlatformPost[] = input.platformdata.map((p) => ({
       postId: Post.id,
       platform: p.platform,

@@ -6,11 +6,10 @@ import { telegramOAuthProcedure } from '../procedures/oauth/telegram'
 import { threadsOAuthProcedure } from '../procedures/oauth/threads'
 import { createTRPCRouter } from '../trpc'
 export const oauthRouter = createTRPCRouter({
-  // Define your OAuth-related procedures here
   instagram: instagramOAuthProcedure,
   threads: threadsOAuthProcedure,
   linkedin: linkedinOAuthProcedure,
   slack: slackOAuthProcedure,
-  discord: discordOAuthProcedure, // Using the dedicated Discord procedure
+  discord: discordOAuthProcedure,
   telegram: telegramOAuthProcedure,
 })

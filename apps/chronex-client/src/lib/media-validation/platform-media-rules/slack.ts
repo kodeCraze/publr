@@ -1,9 +1,7 @@
 import { z } from 'zod'
 
-// ─── Constants (in MB) ────────────────────────────────────────────────────────
-const MAX_FILE_SIZE = 1024 // 1 GB per file
+const MAX_FILE_SIZE = 1024
 
-// ─── Shared file item ─────────────────────────────────────────────────────────
 const slackFileItem = z.object({
   url: z.string().min(1),
   type: z.enum(['image', 'video']),
@@ -12,7 +10,6 @@ const slackFileItem = z.object({
   height: z.number().int().positive().optional(),
   duration: z.number().positive().nullish(),
   extension: z.enum([
-    // Images
     'jpg',
     'jpeg',
     'png',
@@ -20,7 +17,7 @@ const slackFileItem = z.object({
     'webp',
     'bmp',
     'svg',
-    // Videos
+
     'mp4',
     'mov',
     'avi',
@@ -28,7 +25,7 @@ const slackFileItem = z.object({
     'webm',
     'm4v',
     'flv',
-    // Documents (Slack supports file uploads)
+
     'pdf',
     'doc',
     'docx',
@@ -44,18 +41,9 @@ const slackFileItem = z.object({
   aspectRatio: z.string().optional(),
 })
 
-// ─── Aspect Ratio ─────────────────────────────────────────────────────────────
-// Slack: No official aspect ratio restrictions for file uploads.
-
-// ─── Per-type rules ───────────────────────────────────────────────────────────
-
-/** Message with optional file attachments (1–10) */
-
-/** File-only upload (1–10 files) */
 const file = z
   .array(slackFileItem)
   .min(1, 'Slack file uploads require at least 1 file')
   .max(10, 'Slack file uploads support up to 10 files')
 
-// ─── Exported map ─────────────────────────────────────────────────────────────
 export const slack = { file }

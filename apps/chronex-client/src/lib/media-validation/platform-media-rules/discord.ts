@@ -1,9 +1,7 @@
 import { z } from 'zod'
 
-// ─── Constants (in MB) ────────────────────────────────────────────────────────
-const MAX_FILE_SIZE = 25 // 25 MB (free tier cap)
+const MAX_FILE_SIZE = 25
 
-// ─── Shared file item ─────────────────────────────────────────────────────────
 const discordFileItem = z.object({
   url: z.string().min(1),
   type: z.enum(['image', 'video']),
@@ -15,16 +13,9 @@ const discordFileItem = z.object({
   aspectRatio: z.string().optional(),
 })
 
-// ─── Aspect Ratio ─────────────────────────────────────────────────────────────
-// Discord: No official aspect ratio restrictions for file uploads (free tier).
-
-// ─── Per-type rules ───────────────────────────────────────────────────────────
-
-/** File-only upload (1–10 files) */
 const file = z
   .array(discordFileItem)
   .min(1, 'Discord file uploads require at least 1 file')
   .max(10, 'Discord supports up to 10 attachments')
 
-// ─── Exported map ─────────────────────────────────────────────────────────────
 export const discord = { file }

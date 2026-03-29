@@ -110,7 +110,7 @@ export default function PostDetailsPage() {
                 <Badge variant={getStatusVariant(data.status)} className="capitalize">
                   {data.status}
                 </Badge>
-                <span className="text-sm text-muted-foreground">Post #{data.id}</span>
+                <span className="text-sm text-muted-foreground">Post </span>
               </div>
               <CardTitle>{data.refName}</CardTitle>
               <CardDescription>Scheduled for {formatDate(data.scheduledAt)}</CardDescription>

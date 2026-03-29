@@ -80,7 +80,7 @@ export default function LoginPage() {
         }}
       />
 
-      {/* ── Background: diagonal accent line ── */}
+      {}
       <div
         className="pointer-events-none absolute"
         style={{
@@ -95,11 +95,11 @@ export default function LoginPage() {
         }}
       />
 
-      {/* ── Main content ── */}
+      {}
       <div className="relative z-10 w-full max-w-sm">
-        {/* Card */}
+        {}
         <div className="card-fade card-fade-2 rounded-2xl border border-border bg-card p-8 shadow-2xl backdrop-blur-2xl">
-          {/* Header */}
+          {}
           <div className="card-fade card-fade-3 mb-8">
             <h1 className="mb-2 text-2xl font-semibold tracking-tight text-card-foreground">
               Welcome back
@@ -109,9 +109,9 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Buttons */}
+          {}
           <div className="card-fade card-fade-4 flex flex-col gap-3">
-            {/* GitHub */}
+            {}
             <Button
               className="login-btn w-full cursor-pointer gap-2.5"
               onClick={() => handleLogin('github')}
@@ -126,7 +126,7 @@ export default function LoginPage() {
               )}
             </Button>
 
-            {/* Divider */}
+            {}
             <div className="flex items-center gap-3 py-0.5">
               <div className="h-px flex-1 bg-border" />
               <span className="text-[11px] tracking-widest text-muted-foreground/50 uppercase">
@@ -135,7 +135,7 @@ export default function LoginPage() {
               <div className="h-px flex-1 bg-border" />
             </div>
 
-            {/* Google */}
+            {}
             <Button
               variant="outline"
               className="login-btn w-full cursor-pointer gap-2.5"
@@ -153,7 +153,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Footer */}
+        {}
         <p className="card-fade card-fade-5 mt-10 text-center text-xs text-muted-foreground/50">
           By signing in, you agree to our{' '}
           <a href="#" className="text-primary/60 transition-colors hover:text-primary">

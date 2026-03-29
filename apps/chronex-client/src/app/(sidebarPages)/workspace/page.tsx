@@ -72,7 +72,7 @@ const Page = () => {
 
   return (
     <div className="mx-auto min-h-full max-w-3xl space-y-6 p-8">
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between">
         <h1 className="text-sm font-medium text-foreground">Workspaces</h1>
         <Button size="sm" variant="outline" onClick={() => setCreateDialogOpen(true)}>
@@ -81,7 +81,7 @@ const Page = () => {
         </Button>
       </div>
 
-      {/* Search */}
+      {}
       <div className="relative">
         <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
         <Input
@@ -92,9 +92,9 @@ const Page = () => {
         />
       </div>
 
-      {/* Table */}
+      {}
       <div className="overflow-hidden rounded-md border border-border">
-        {/* Column headers */}
+        {}
         <div className="grid grid-cols-[1fr_80px_36px] items-center border-b border-border bg-muted/20 px-4 py-2">
           <span className="text-xs text-muted-foreground">Name</span>
           <span className="text-xs text-muted-foreground">ID</span>
@@ -136,7 +136,7 @@ const Page = () => {
               key={String(workspace.id)}
               className="group grid grid-cols-[1fr_80px_36px] items-center border-b border-border px-4 py-3 transition-colors last:border-0 hover:bg-muted/20"
             >
-              {/* Name / Edit */}
+              {}
               {editingId === Number(workspace.id) ? (
                 <div className="flex items-center gap-2 pr-4">
                   <Input
@@ -173,12 +173,12 @@ const Page = () => {
                 <span className="truncate text-sm text-foreground">{workspace.name}</span>
               )}
 
-              {/* ID */}
+              {}
               <span className="font-mono text-xs text-muted-foreground">
                 {String(workspace.id)}
               </span>
 
-              {/* Actions */}
+              {}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -213,7 +213,7 @@ const Page = () => {
         )}
       </div>
 
-      {/* Count */}
+      {}
       {!isLoading && (workspaces?.length ?? 0) > 0 && (
         <p className="text-xs text-muted-foreground">
           {filteredWorkspaces?.length} of {workspaces?.length} workspace
@@ -221,7 +221,7 @@ const Page = () => {
         </p>
       )}
 
-      {/* Delete Dialog */}
+      {}
       <AlertDialog
         open={deleteConfirmId !== null}
         onOpenChange={(open) => !open && setDeleteConfirmId(null)}
@@ -247,7 +247,7 @@ const Page = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Create Dialog */}
+      {}
       <AlertDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

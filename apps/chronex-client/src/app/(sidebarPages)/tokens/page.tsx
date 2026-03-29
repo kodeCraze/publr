@@ -46,7 +46,7 @@ export default function ConnectionsPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-8">
-      {/* Header */}
+      {}
       <div className="mb-8 rounded-xl border border-border/70 bg-card px-5 py-4">
         <div className="mb-1 flex items-center gap-2">
           <ShieldCheck className="size-5 text-primary" />

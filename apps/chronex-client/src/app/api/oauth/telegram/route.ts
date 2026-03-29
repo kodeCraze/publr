@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { and, authToken, eq, telegramChannels } from '@repo/db'
+import { authToken, eq } from '@repo/db'
 import { db } from '@/config/drizzle'
 
 type TelegramChat = {
@@ -101,34 +101,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true })
     }
 
-    const existing = await db.query.telegramChannels.findFirst({
-      where: (channel, { and, eq }) =>
-        and(eq(channel.workspaceId, tokenRecord.workspaceId), eq(channel.chatId, chatId)),
-    })
-
-    if (existing) {
-      await db
-        .update(telegramChannels)
-        .set({
-          title,
-          username: message.chat.username ?? null,
-          type: message.chat.type,
-          isActive: true,
-          lastSeenAt: new Date(),
-        })
-        .where(eq(telegramChannels.id, existing.id))
-    } else {
-      await db.insert(telegramChannels).values({
-        workspaceId: tokenRecord.workspaceId,
-        chatId,
-        title,
-        username: message.chat.username ?? null,
-        type: message.chat.type,
-        isActive: true,
-        lastSeenAt: new Date(),
-      })
-    }
-
     await db
       .update(authToken)
       .set({
@@ -141,29 +113,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true })
   }
 
-  const knownChannel = await db.query.telegramChannels.findFirst({
-    where: (channel, { eq }) => eq(channel.chatId, chatId),
+  const knownToken = await db.query.authToken.findFirst({
+    where: (token, { and, eq }) => and(eq(token.platform, 'telegram'), eq(token.profileId, chatId)),
     columns: { id: true },
   })
 
-  if (knownChannel) {
-    await db
-      .update(telegramChannels)
-      .set({
-        title,
-        username: message.chat.username ?? null,
-        type: message.chat.type,
-        isActive: true,
-        lastSeenAt: new Date(),
-      })
-      .where(eq(telegramChannels.chatId, chatId))
-
+  if (knownToken) {
     await db
       .update(authToken)
       .set({
         profileName: title,
       })
-      .where(and(eq(authToken.platform, 'telegram'), eq(authToken.profileId, chatId)))
+      .where(eq(authToken.id, knownToken.id))
   }
 
   return NextResponse.json({ ok: true })

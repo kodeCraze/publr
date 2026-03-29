@@ -50,7 +50,7 @@ export const getChannels = workspaceProcedure
         })
         const data = (await res.json()) as { id: string; name: string; type: number }[]
         console.log(data)
-        // Discord returns an array of channels
+
         return data
           .filter((c) => c.type === 0 || c.type === 5)
           .map((c) => ({
@@ -60,20 +60,16 @@ export const getChannels = workspaceProcedure
       }
 
       if (input.platform === 'telegram') {
-        const channels = await ctx.db.query.telegramChannels.findMany({
-          where: (channel, { and, eq }) =>
-            and(eq(channel.workspaceId, ctx.workspaceId), eq(channel.isActive, true)),
-          columns: {
-            chatId: true,
-            title: true,
-          },
-          orderBy: (channel, { asc }) => [asc(channel.title)],
-        })
+        if (!token.profileId) {
+          return []
+        }
 
-        return channels.map((channel) => ({
-          id: channel.chatId,
-          name: channel.title,
-        }))
+        return [
+          {
+            id: token.profileId,
+            name: token.profileName || token.profileId,
+          },
+        ]
       }
 
       return []

@@ -4,7 +4,6 @@ import { user } from './auth'
 import { authToken } from './auth-token'
 import { post, postMedia } from './posts'
 
-// Workspaces table
 export const workspace = pgTable(
   'workspaces',
   {

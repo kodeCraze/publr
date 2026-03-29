@@ -24,17 +24,17 @@ export const getUser = workspaceProcedure.query(async ({ ctx }) => {
         },
       },
     })
-    const telegramChannels = await ctx.db.query.telegramChannels.findMany({
-      where: (channel, { and, eq }) =>
-        and(eq(channel.workspaceId, ctx.workspaceId), eq(channel.isActive, true)),
+    const telegramToken = await ctx.db.query.authToken.findFirst({
+      where: (authToken, { and, eq }) =>
+        and(eq(authToken.workspaceId, ctx.workspaceId), eq(authToken.platform, 'telegram')),
       columns: {
-        id: true,
+        profileId: true,
       },
     })
 
     return {
       ...user,
-      telegramChannelCount: telegramChannels.length,
+      telegramChannelCount: telegramToken?.profileId ? 1 : 0,
     }
   } catch (error) {
     console.log(error)

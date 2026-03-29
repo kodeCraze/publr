@@ -1,9 +1,5 @@
 import { TRPCError } from '@trpc/server'
 
-/**
- * Base procedure for all OAuth routes - requires authentication + workspace
- */
-
 interface ShortLivedTokenParams {
   url: string
   clientId: string
