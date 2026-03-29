@@ -1,6 +1,7 @@
 import { TRPCError } from '@trpc/server'
 import { authToken, eq, type NewAuthToken } from '@repo/db'
 import { workspaceProcedure } from '../../trpc'
+import { getBaseUrl } from '@/utils/getBaseUrl'
 
 type TelegramWebhookInfo = {
   ok: boolean
@@ -28,7 +29,7 @@ function getWebhookSecret(token: string) {
 
 export const telegramOAuthProcedure = workspaceProcedure.mutation(async ({ ctx }) => {
   const botToken = process.env.TELEGRAM_BOT_TOKEN
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL
+  const appUrl = getBaseUrl()
 
   if (!botToken) {
     throw new TRPCError({
