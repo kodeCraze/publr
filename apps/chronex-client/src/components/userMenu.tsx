@@ -39,7 +39,7 @@ export function UserMenu({ user, avatar }: UserMenuProps) {
 
           <button
             onClick={() => router.push('/signout')}
-            className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-destructive hover:bg-accent"
+            className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 hover:bg-accent"
           >
             <LogOut size={14} />
             Log out

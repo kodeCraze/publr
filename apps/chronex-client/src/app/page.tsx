@@ -153,33 +153,59 @@ export default function HomePage() {
 
         {}
         <header className="sticky top-0 left-0 z-50 border-b border-border/80 bg-background/85 backdrop-blur-md">
-          <div className="mx-auto flex max-w-full items-center justify-between px-20 py-4">
-            <Link href="/" className="brand-wrap">
-              <BrandName />
-            </Link>
+          <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-10">
+            <div className="flex items-center justify-between gap-3">
+              <Link href="/" className="brand-wrap shrink-0">
+                <BrandName />
+              </Link>
+
+              <div className="flex items-center gap-2 sm:hidden">
+                <a
+                  href={SOCIAL_LINKS.github}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Chronex on GitHub"
+                  className="inline-flex size-8 shrink-0 items-center justify-center rounded-full border border-border/70 bg-background/60 text-foreground/65 transition-all hover:border-primary/40 hover:text-foreground"
+                >
+                  <Github className="size-4" />
+                </a>
+                <a
+                  href={SOCIAL_LINKS.x}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Chronex on X"
+                  className="inline-flex size-8 shrink-0 items-center justify-center rounded-full border border-border/70 bg-background/60 text-foreground/65 transition-all hover:border-primary/40 hover:text-foreground"
+                >
+                  <XLogoIcon size={14} />
+                </a>
+                <ThemeToggle />
+              </div>
+            </div>
 
             <div className="flex items-center gap-2">
-              <a
-                href={SOCIAL_LINKS.github}
-                target="_blank"
-                rel="noreferrer"
-                aria-label="Chronex on GitHub"
-                className="inline-flex size-9 items-center justify-center rounded-full border border-border/70 bg-background/60 text-foreground/65 transition-all hover:border-primary/40 hover:text-foreground"
-              >
-                <Github className="size-4" />
-              </a>
-              <a
-                href={SOCIAL_LINKS.x}
-                target="_blank"
-                rel="noreferrer"
-                aria-label="Chronex on X"
-                className="inline-flex size-9 items-center justify-center rounded-full border border-border/70 bg-background/60 text-foreground/65 transition-all hover:border-primary/40 hover:text-foreground"
-              >
-                <XLogoIcon size={14} />
-              </a>
-              <ThemeToggle />
-              {}
-              <Button asChild size="sm" className="gap-1.5">
+              <div className="hidden items-center gap-2 sm:flex">
+                <a
+                  href={SOCIAL_LINKS.github}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Chronex on GitHub"
+                  className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-border/70 bg-background/60 text-foreground/65 transition-all hover:border-primary/40 hover:text-foreground"
+                >
+                  <Github className="size-4" />
+                </a>
+                <a
+                  href={SOCIAL_LINKS.x}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Chronex on X"
+                  className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-border/70 bg-background/60 text-foreground/65 transition-all hover:border-primary/40 hover:text-foreground"
+                >
+                  <XLogoIcon size={14} />
+                </a>
+                <ThemeToggle />
+              </div>
+
+              <Button asChild size="sm" className="hidden w-full gap-1.5 sm:inline-flex sm:w-auto">
                 <Link href="/post/createPost">
                   Open Studio
                   <ArrowRight className="size-3.5" />
