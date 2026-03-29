@@ -1,0 +1,32 @@
+{
+  "accountId": "YOUR_ACCOUNT_ID",
+  "bucketId": "YOUR_BUCKET_ID",
+  "bucketName": "chronex",
+  "corsRules": [
+    {
+      "corsRuleName": "chronex-local-and-prod",
+      "allowedOrigins": ["http://localhost:3000", "https://your-app-domain.com"],
+      "allowedHeaders": [
+        "authorization",
+        "content-type",
+        "x-bz-file-name",
+        "x-bz-content-sha1",
+        "x-bz-info-author"
+      ],
+      "allowedOperations": ["b2_upload_file", "b2_download_file_by_id", "b2_download_file_by_name"],
+      "exposeHeaders": ["x-bz-content-sha1", "x-bz-file-id", "x-bz-file-name"],
+      "maxAgeSeconds": 3600
+    }
+  ],
+  "lifecycleRules": [],
+  "fileLockConfiguration": {
+    "isClientAuthorizedToRead": true,
+    "value": null
+  },
+  "defaultServerSideEncryption": {
+    "isClientAuthorizedToRead": true,
+    "value": {
+      "mode": "none"
+    }
+  }
+}
