@@ -23,33 +23,48 @@ export default async function TelegramConnectPage() {
     return <div>Telegram connection failed. Please try again.</div>
   }
 
-  const addBotUrl = `https://t.me/${botUsername}?startgroup=chronex_${registrationCode}`
+  const addBotToGroupUrl = `https://t.me/${botUsername}?startgroup=chronex_${registrationCode}`
+  const addBotToChannelUrl = `https://t.me/${botUsername}?startchannel&admin=post_messages`
 
   return (
     <main className="mx-auto max-w-xl space-y-4 px-6 py-8 text-sm">
       <h1 className="text-xl font-semibold">Telegram setup started</h1>
       <p>
-        The workspace is linked to <strong>@{botUsername}</strong>, but Telegram will only become
-        fully connected after you register at least one channel or group.
+        Finish setup with <strong>@{botUsername}</strong> in the Telegram destination you want to
+        use.
       </p>
       <ol className="list-decimal space-y-2 pl-5">
-        <li>Add the bot as an admin in the Telegram channel or group you want to post to.</li>
         <li>
-          In that same chat, send this command once:
-          <code className="ml-2 rounded bg-muted px-2 py-1">/connect {registrationCode}</code>
+          For groups, use the group button below. For channels, use the channel button below and add
+          the bot as an admin.
         </li>
-        <li>After the bot confirms, close this tab and refresh Chronex.</li>
+        <li>
+          In the target chat, send{' '}
+          <code className="rounded bg-muted px-2 py-1">/connect {registrationCode}</code>
+        </li>
       </ol>
-      <p>
+      <p className="text-muted-foreground">
+        Sending the code in a private chat with the bot will not connect the workspace.
+      </p>
+      <div className="flex flex-col gap-2 sm:flex-row">
         <Link
-          href={addBotUrl}
+          href={addBotToGroupUrl}
           target="_blank"
           rel="noreferrer"
           className="text-primary underline underline-offset-4"
         >
-          Open Telegram and add the bot
+          Add bot to group
         </Link>
-      </p>
+        <Link
+          href={addBotToChannelUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="text-primary underline underline-offset-4"
+        >
+          Add bot to channel
+        </Link>
+      </div>
+      <p>Refresh Chronex after the bot confirms.</p>
     </main>
   )
 }

@@ -277,7 +277,9 @@ Telegram has a different connection flow from the other OAuth providers:
 
 - Chronex registers a webhook at `/api/oauth/telegram`
 - The bot token is stored in the auth token table for the workspace
-- Users connect a Telegram chat by sending a generated registration code to the bot
+- Users connect a Telegram group or channel by sending a generated registration code in that target chat
+- Private chats with the bot are not used as publish destinations
+- Telegram channel add links require admin permissions; Chronex requests `post_messages` for channel setup
 
 Required env vars:
 

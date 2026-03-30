@@ -3,6 +3,11 @@ import { TRPCError } from '@trpc/server'
 import { b2 } from '@/config/backBlaze'
 import { postMedia, eq } from '@repo/db'
 
+type TelegramBotInfo = {
+  ok: boolean
+  result?: { id: number }
+}
+
 export const getUser = workspaceProcedure.query(async ({ ctx }) => {
   try {
     const user = await ctx.db.query.user.findFirst({
@@ -29,13 +34,36 @@ export const getUser = workspaceProcedure.query(async ({ ctx }) => {
       where: (authToken, { and, eq }) =>
         and(eq(authToken.workspaceId, ctx.workspaceId), eq(authToken.platform, 'telegram')),
       columns: {
+        accessToken: true,
         profileId: true,
       },
     })
 
+    let telegramChannelCount = 0
+
+    if (telegramToken?.profileId) {
+      try {
+        const response = await fetch(
+          `https://api.telegram.org/bot${telegramToken.accessToken}/getMe`,
+        )
+        const data = (await response.json()) as TelegramBotInfo
+        const botId = data.ok && data.result ? String(data.result.id) : null
+
+        telegramChannelCount =
+          botId && telegramToken.profileId !== botId
+            ? 1
+            : telegramToken.profileId.startsWith('-')
+              ? 1
+              : 0
+      } catch (error) {
+        console.error('Failed to validate Telegram connection state:', error)
+        telegramChannelCount = telegramToken.profileId.startsWith('-') ? 1 : 0
+      }
+    }
+
     return {
       ...user,
-      telegramChannelCount: telegramToken?.profileId ? 1 : 0,
+      telegramChannelCount,
     }
   } catch (error) {
     console.log(error)

@@ -56,6 +56,17 @@ function getChatTitle(chat: TelegramChat) {
   )
 }
 
+function getChatLabel(chat: TelegramChat) {
+  if (chat.type === 'channel') return 'channel'
+  if (chat.type === 'group' || chat.type === 'supergroup') return 'group'
+  if (chat.type === 'private') return 'private chat'
+  return 'chat'
+}
+
+function isRegistrableChat(chat: TelegramChat) {
+  return chat.type === 'channel' || chat.type === 'group' || chat.type === 'supergroup'
+}
+
 async function sendTelegramMessage(chatId: string, text: string) {
   const token = process.env.TELEGRAM_BOT_TOKEN
   if (!token) return
@@ -101,6 +112,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true })
     }
 
+    if (!isRegistrableChat(message.chat)) {
+      await sendTelegramMessage(
+        chatId,
+        `Finish setup from the Telegram channel or group you want to publish to. Private chats can't be connected as a Chronex destination.\n\nAdd this bot as an admin there, then send:\n/connect ${registrationCode}`,
+      )
+      return NextResponse.json({ ok: true })
+    }
+
     await db
       .update(authToken)
       .set({
@@ -109,7 +128,10 @@ export async function POST(request: Request) {
       })
       .where(eq(authToken.id, tokenRecord.id))
 
-    await sendTelegramMessage(chatId, `Connected "${title}" to Chronex successfully.`)
+    await sendTelegramMessage(
+      chatId,
+      `Connected this Telegram ${getChatLabel(message.chat)} to Chronex successfully: "${title}".`,
+    )
     return NextResponse.json({ ok: true })
   }
 
