@@ -1,4 +1,4 @@
-DATABASE_URL =POSTGRES_CONNECTION_STRING
+DATABASE_URL =NEON_CONNECTION_STRING
 DISCORD_BOT_TOKEN= YOUR_DISCORD_BOT_TOKEN_HERE
 DISCORD_WEBHOOK_NAME = "Chronex Bot"
 DISCORD_WEBHOOK_AVATAR_URL = "https://raw.githubusercontent.com/prncexe/chronex/main/apps/chronex-client/public/favicon.png"

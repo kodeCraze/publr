@@ -54,7 +54,7 @@ User signs in → creates workspace
         ↓
 Platform tokens stored per workspace in DB
         ↓
-Media uploaded to Backblaze B2 → metadata saved to Postgres
+Media uploaded to Backblaze B2 → metadata saved to Neon
         ↓
 Post created → one `posts` row + one `platform_posts` row per target platform
         ↓

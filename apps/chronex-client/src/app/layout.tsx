@@ -8,13 +8,12 @@ import { Analytics } from '@vercel/analytics/next'
 export const metadata: Metadata = {
   metadataBase: new URL('https://chronex.princecodes.tech'),
   title: 'Chronex',
-  description:
-    'A social media management tool built for teams, designed to streamline content scheduling and collaboration across multiple platforms.',
+  description: 'A unified platform to schedule and manage your content across all platforms.',
   openGraph: {
     type: 'website',
     siteName: 'Chronex',
     title: 'Chronex',
-    description: 'Streamline content scheduling and collaboration across multiple platforms.',
+    description: 'Schedule and manage your content across all platforms.',
     url: 'https://chronex.princecodes.tech',
     images: [
       {
@@ -28,7 +27,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Chronex',
-    description: 'Streamline content scheduling and collaboration across multiple platforms.',
+    description: 'Schedule and manage your content across all platforms.',
     images: ['/image.png'],
     site: '@prncexe',
   },

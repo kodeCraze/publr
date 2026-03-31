@@ -27,10 +27,10 @@ import Workspace from './workspace'
 
 const mainNavItems = [
   { title: 'Home', url: '/', icon: Home },
-  { title: 'Posts', url: '/post', icon: PenSquare },
+  { title: 'Scheduled Posts', url: '/post', icon: PenSquare },
   { title: 'Create Post', url: '/post/createPost', icon: PlusSquare },
-  { title: 'Media', url: '/media', icon: ImageIcon },
-  { title: 'Tokens', url: '/tokens', icon: Key },
+  { title: 'Media Library', url: '/media', icon: ImageIcon },
+  { title: 'Connected Accounts', url: '/tokens', icon: Key },
   { title: 'Workspace', url: '/workspace', icon: Briefcase },
 ]
 

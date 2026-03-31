@@ -250,8 +250,8 @@ export default function HomePage() {
               transition={{ duration: 0.5, delay: 0.15 }}
               className="mt-6 max-w-[430px] text-base leading-relaxed text-foreground/65 sm:text-[17px]"
             >
-              A modern publishing control surface for teams — connected platforms, shared media,
-              platform-aware content, and scheduling you can trust.
+              A unified platform to schedule and manage your content across all platforms. Save
+              time, stay organized.
             </motion.p>
 
             {}
