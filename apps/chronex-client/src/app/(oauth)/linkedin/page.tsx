@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { getCaller } from '@/utils/trpcServer'
+import { caller } from '@/utils/trpcServer'
 
 type PageProps = {
   searchParams: Promise<{
@@ -15,7 +15,6 @@ export default async function Page({ searchParams }: PageProps) {
   let isAuthorized = false
 
   try {
-    const caller = await getCaller()
     await caller.oauthRouter.linkedin({ code })
     isAuthorized = true
   } catch (error) {

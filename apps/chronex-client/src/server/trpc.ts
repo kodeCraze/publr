@@ -3,19 +3,22 @@ import superjson from 'superjson'
 import { db } from '@/config/drizzle'
 import { auth } from '@/config/authInstance'
 import { cookies } from 'next/headers'
+import { headers as nextHeaders } from 'next/headers'
 
-export const createTRPCContext = async (opts: { headers: Headers }) => {
+export const createTRPCContext = async () => {
+  const incoming = await nextHeaders()
+  const h = new Headers(incoming)
   const cookieStore = await cookies()
 
   const workspaceId = cookieStore.get('workspaceId')?.value
 
   const session = await auth.api.getSession({
-    headers: opts.headers,
+    headers: h,
   })
 
   return {
     db,
-    headers: opts.headers,
+    headers: h,
     cookies: cookieStore,
     user: session?.user || null,
     workspaceId: workspaceId || null,

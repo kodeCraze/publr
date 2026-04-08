@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { getCaller } from '@/utils/trpcServer'
+import { caller } from '@/utils/trpcServer'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,7 +9,6 @@ export default async function TelegramConnectPage() {
   let hasError = false
 
   try {
-    const caller = await getCaller()
     const result = await caller.oauthRouter.telegram()
 
     botUsername = result.botUsername || botUsername
