@@ -2,23 +2,15 @@
 
 import Link from 'next/link'
 import { motion } from 'motion/react'
-import {
-  ArrowRight,
-  CalendarClock,
-  CircleDollarSign,
-  Github,
-  Heart,
-  Layers3,
-  ShieldCheck,
-  ArrowUpRight,
-} from 'lucide-react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { ArrowRight, CalendarClock, Layers3, ShieldCheck, ArrowUpRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { BrandName } from '@/components/logo/brandName'
 import { ThemeToggle } from '@/components/themeToggle'
 import IconRenderer from '@/lib/logoMapping'
 import { PlatformId } from '@/config/platforms'
 import XLogoIcon from '@/components/logo/x'
+import { isPlatformEnabled } from '@/lib/platformAvailability'
 
 const PLATFORMS: Array<{ name: PlatformId; color: string }> = [
   { name: 'instagram', color: '#E1306C' },
@@ -29,41 +21,60 @@ const PLATFORMS: Array<{ name: PlatformId; color: string }> = [
   { name: 'telegram', color: '#0088cc' },
 ]
 
+const ENABLED_PLATFORMS = PLATFORMS.filter((platform) => isPlatformEnabled(platform.name))
+const PLATFORM_LABELS: Record<PlatformId, string> = {
+  instagram: 'Instagram',
+  threads: 'Threads',
+  linkedin: 'LinkedIn',
+  slack: 'Slack',
+  discord: 'Discord',
+  telegram: 'Telegram',
+}
+const PLATFORM_CAPABILITY_LABELS: Record<PlatformId, string> = {
+  instagram: 'Business posting',
+  threads: 'Thread scheduling',
+  linkedin: 'Page publishing',
+  slack: 'Workspace broadcast',
+  discord: 'Channel drops',
+  telegram: 'Bot publishing',
+}
+const TICKER_PX_PER_SECOND = 90
+
 const SCHEDULE = [
   {
-    platform: 'Instagram',
-    color: '#E1306C',
+    platform: 'Telegram',
+    color: '#0088cc',
     time: 'Today  ·  9:00 AM',
     status: 'queued',
-    title: 'Welcome campaign post',
+    title: 'Morning launch teaser',
   },
   {
     platform: 'LinkedIn',
     color: '#0A66C2',
     time: 'Today  ·  11:30 AM',
     status: 'queued',
-    title: 'Product announcement',
+    title: 'Founder hot take (clean version)',
   },
   {
-    platform: 'Threads',
-    color: '#888888',
+    platform: 'Slack',
+    color: '#E01E5A',
     time: 'Today  ·  2:00 PM',
     status: 'draft',
-    title: 'Behind the scenes',
+    title: 'Team update: wins + blockers',
   },
   {
     platform: 'Discord',
     color: '#5865F2',
     time: 'Yesterday',
     status: 'sent',
-    title: 'New feature announcement',
+    title: 'Community feature roast night',
   },
   {
-    platform: 'Slack',
-    color: '#E01E5A',
+    platform: 'Telegram',
+    color: '#0088cc',
     time: 'Yesterday',
     status: 'sent',
-    title: 'Weekly newsletter teaser',
+    title: 'Weekly roundup in 5 bullets',
   },
 ]
 
@@ -95,45 +106,104 @@ const STATUS_STYLES: Record<string, string> = {
 }
 
 const SOCIAL_LINKS = {
-  github: process.env.NEXT_PUBLIC_GITHUB_URL,
   x: process.env.NEXT_PUBLIC_X_URL,
-  sponsors: process.env.NEXT_PUBLIC_GITHUB_SPONSORS_URL,
-  kofi: process.env.NEXT_PUBLIC_KOFI_URL,
-  paypal: process.env.NEXT_PUBLIC_PAYPAL_URL,
 }
 
-const SUPPORT_LINKS = [
+const LEGAL_LINKS = [
+  { label: 'Privacy Policy', href: '/privacy-policy' },
+  { label: 'Terms & Conditions', href: '/terms-and-conditions' },
+]
+
+const TRUST_ITEMS = ['Per-platform customization', 'Queue + retries', 'OAuth token safety']
+
+const FAQ_ITEMS = [
   {
-    href: SOCIAL_LINKS.sponsors,
-    label: 'GitHub Sponsors',
-    description: 'Sponsor ongoing Chronex development',
-    icon: Github,
+    q: 'How long does onboarding take?',
+    a: 'Most teams connect their channels and schedule the first post in under 10 minutes.',
   },
   {
-    href: SOCIAL_LINKS.kofi,
-    label: 'Ko-fi',
-    description: 'Tip the project with a quick coffee',
-    icon: Heart,
+    q: 'Can I control each platform separately?',
+    a: 'Yes. You can customize content per platform while managing one shared campaign timeline.',
   },
   {
-    href: SOCIAL_LINKS.paypal,
-    label: 'PayPal',
-    description: 'Send support directly via PayPal',
-    icon: CircleDollarSign,
+    q: 'Can I disable specific platforms?',
+    a: 'Yes. You can hide providers from the UI using your platform blacklist environment setting.',
   },
 ]
 
 export default function HomePage() {
+  const marqueeViewportRef = useRef<HTMLDivElement>(null)
+  const marqueeSegmentRef = useRef<HTMLDivElement>(null)
+  const [segmentWidth, setSegmentWidth] = useState(0)
+  const [cloneCount, setCloneCount] = useState(1)
+  const [isMarqueeReady, setIsMarqueeReady] = useState(false)
+
+  const tickerItems = useMemo(
+    () =>
+      ENABLED_PLATFORMS.map((platform) => ({
+        id: platform.name,
+        label: PLATFORM_LABELS[platform.name],
+      })),
+    [],
+  )
+
+  useEffect(() => {
+    const viewportEl = marqueeViewportRef.current
+    const segmentEl = marqueeSegmentRef.current
+    if (!viewportEl || !segmentEl) return
+
+    let frameId: number | null = null
+
+    const recomputeMarquee = () => {
+      if (frameId !== null) {
+        cancelAnimationFrame(frameId)
+      }
+
+      frameId = requestAnimationFrame(() => {
+        const nextSegmentWidth = Math.ceil(segmentEl.scrollWidth)
+        const nextViewportWidth = Math.ceil(viewportEl.clientWidth)
+
+        if (nextSegmentWidth <= 0 || nextViewportWidth <= 0) {
+          setIsMarqueeReady(false)
+          return
+        }
+
+        const nextCloneCount = Math.max(1, Math.ceil((nextViewportWidth * 2) / nextSegmentWidth))
+        setSegmentWidth(nextSegmentWidth)
+        setCloneCount(nextCloneCount)
+        setIsMarqueeReady(true)
+      })
+    }
+
+    const observer = new ResizeObserver(recomputeMarquee)
+    observer.observe(viewportEl)
+    observer.observe(segmentEl)
+    recomputeMarquee()
+
+    if (typeof document !== 'undefined' && 'fonts' in document) {
+      document.fonts.ready.then(recomputeMarquee).catch(() => {})
+    }
+
+    return () => {
+      observer.disconnect()
+      if (frameId !== null) {
+        cancelAnimationFrame(frameId)
+      }
+    }
+  }, [tickerItems])
+
+  const marqueeStyle = useMemo(() => {
+    const durationSeconds =
+      segmentWidth > 0 ? Math.max(12, segmentWidth / TICKER_PX_PER_SECOND) : 24
+    return {
+      '--segment-width': `${segmentWidth}px`,
+      '--marquee-duration': `${durationSeconds}s`,
+    } as CSSProperties
+  }, [segmentWidth])
+
   return (
     <>
       <style>{`
-        @keyframes ticker {
-          from { transform: translateX(0); }
-          to   { transform: translateX(-50%); }
-        }
-        .ticker-track { animation: ticker 24s linear infinite; }
-        .ticker-track:hover { animation-play-state: paused; }
-
         @keyframes blink {
           0%, 100% { opacity: 1; }
           50%       { opacity: .35; }
@@ -145,7 +215,12 @@ export default function HomePage() {
       `}</style>
 
       <main className="relative min-h-screen bg-background">
-        {}
+        <div aria-hidden className="home-bg">
+          <div className="home-bg-orb home-bg-orb-a" />
+          <div className="home-bg-orb home-bg-orb-b" />
+          <div className="home-bg-vignette" />
+        </div>
+
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_-5%,hsl(var(--primary)/.2),transparent_65%)]"
@@ -161,15 +236,6 @@ export default function HomePage() {
 
               <div className="flex items-center gap-2 sm:hidden">
                 <a
-                  href={SOCIAL_LINKS.github}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label="Chronex on GitHub"
-                  className="inline-flex size-8 shrink-0 items-center justify-center rounded-full border border-border/70 bg-background/60 text-foreground/65 transition-all hover:border-primary/40 hover:text-foreground"
-                >
-                  <Github className="size-4" />
-                </a>
-                <a
                   href={SOCIAL_LINKS.x}
                   target="_blank"
                   rel="noreferrer"
@@ -184,15 +250,6 @@ export default function HomePage() {
 
             <div className="flex items-center gap-2">
               <div className="hidden items-center gap-2 sm:flex">
-                <a
-                  href={SOCIAL_LINKS.github}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label="Chronex on GitHub"
-                  className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-border/70 bg-background/60 text-foreground/65 transition-all hover:border-primary/40 hover:text-foreground"
-                >
-                  <Github className="size-4" />
-                </a>
                 <a
                   href={SOCIAL_LINKS.x}
                   target="_blank"
@@ -228,7 +285,7 @@ export default function HomePage() {
             >
               <span className="h-px w-8 bg-primary/80" />
               <span className="font-mono text-[12px] font-medium tracking-[.14em] text-primary uppercase">
-                Multi Platform Scheduling — simplified
+                Multi Platform Publishing
               </span>
             </motion.div>
 
@@ -239,7 +296,7 @@ export default function HomePage() {
               transition={{ duration: 0.55, delay: 0.05 }}
               className="text-[clamp(44px,6.5vw,82px)] leading-[1.01] font-bold tracking-[-0.045em] text-foreground"
             >
-              Plan once.
+              Decide once.
               <br />
               <span className="text-primary">Publish</span> everywhere.
             </motion.h1>
@@ -250,8 +307,8 @@ export default function HomePage() {
               transition={{ duration: 0.5, delay: 0.15 }}
               className="mt-6 max-w-[430px] text-base leading-relaxed text-foreground/65 sm:text-[17px]"
             >
-              A unified platform to schedule and manage your content across all platforms. Save
-              time, stay organized.
+              Plan once, tailor per channel, and schedule your weekly content pipeline from one
+              workspace.
             </motion.p>
 
             {}
@@ -277,15 +334,38 @@ export default function HomePage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.35 }}
-              className="mt-9 flex flex-wrap gap-2"
+              className="mt-9"
             >
-              {PLATFORMS.map((p) => (
+              <p className="mb-2 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+                Works with
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {ENABLED_PLATFORMS.map((p) => (
+                  <span
+                    key={p.name}
+                    className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1.5 text-[12px] text-foreground/75 transition-colors hover:border-border hover:text-foreground"
+                  >
+                    <IconRenderer name={p.name} size={14} />
+                    <span className="font-medium">{PLATFORM_LABELS[p.name]}</span>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="text-foreground/60">{PLATFORM_CAPABILITY_LABELS[p.name]}</span>
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="mt-3 flex flex-wrap items-center gap-2"
+            >
+              {TRUST_ITEMS.map((item) => (
                 <span
-                  key={p.name}
-                  className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1.5 text-[13px] text-foreground/70 transition-colors hover:border-border hover:text-foreground"
+                  key={item}
+                  className="rounded-full border border-border/70 bg-card/70 px-3 py-1 text-[11px] font-medium tracking-wide text-muted-foreground"
                 >
-                  <IconRenderer name={p.name} size={14} />
-                  {p.name}
+                  {item}
                 </span>
               ))}
             </motion.div>
@@ -304,13 +384,15 @@ export default function HomePage() {
               <div className="flex items-center justify-between border-b border-border/75 px-5 py-3.5">
                 <div>
                   <p className="mb-0.5 font-mono text-[11px] font-semibold tracking-[.13em] text-primary uppercase">
-                    Upcoming
+                    On Deck
                   </p>
-                  <p className="text-[14px] font-semibold text-foreground">5 posts scheduled</p>
+                  <p className="text-[14px] font-semibold text-foreground">
+                    Your content is cooking
+                  </p>
                 </div>
                 <span className="flex items-center gap-1.5 font-mono text-[11px] font-medium text-foreground/60">
                   <span className="live-dot size-2 rounded-full bg-green-500" />
-                  Live
+                  Vibing
                 </span>
               </div>
 
@@ -348,8 +430,8 @@ export default function HomePage() {
             {}
             <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border/85 bg-border/80 shadow-sm">
               {[
-                { value: '5+', label: 'Platform Integrations' },
-                { value: '100%', label: 'Time Saved' },
+                { value: '6', label: 'Channels synced' },
+                { value: '3 min', label: 'To schedule your first week' },
               ].map((s) => (
                 <div key={s.label} className="bg-card/95 px-6 py-5">
                   <p className="text-3xl font-bold tracking-[-0.04em] text-foreground">{s.value}</p>
@@ -361,7 +443,10 @@ export default function HomePage() {
         </section>
 
         {}
-        <div className="relative z-10 overflow-hidden border-y border-border/75 py-4">
+        <div
+          ref={marqueeViewportRef}
+          className="seamless-marquee relative z-10 overflow-hidden border-y border-border/75 py-4"
+        >
           <div
             aria-hidden
             className="pointer-events-none absolute inset-y-0 left-0 z-10 w-28 bg-gradient-to-r from-background to-transparent"
@@ -370,17 +455,42 @@ export default function HomePage() {
             aria-hidden
             className="pointer-events-none absolute inset-y-0 right-0 z-10 w-28 bg-gradient-to-l from-background to-transparent"
           />
-          <div className="ticker-track flex w-max">
-            {[...PLATFORMS, ...PLATFORMS, ...PLATFORMS, ...PLATFORMS].map((p, i) => (
-              <span
-                key={i}
-                className="flex items-center justify-center gap-3 px-10 font-mono text-[12px] font-medium tracking-widest whitespace-nowrap text-foreground/55 uppercase"
-              >
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center">
-                  <IconRenderer name={p.name} />
+          <div
+            style={marqueeStyle}
+            className={`seamless-marquee-track ${!isMarqueeReady ? 'seamless-marquee-track--paused' : ''}`}
+          >
+            <div ref={marqueeSegmentRef} className="seamless-marquee-segment gap-10 pr-10">
+              {tickerItems.map((item, index) => (
+                <span
+                  key={`base-${item.id}-${index}`}
+                  className="inline-flex items-center gap-1.5 px-2 py-1 text-[13px] leading-none font-medium whitespace-nowrap text-foreground/72"
+                >
+                  <span className="flex size-4 shrink-0 items-center justify-center">
+                    <IconRenderer name={item.id} size={13} />
+                  </span>
+                  <span className="leading-none">{item.label}</span>
                 </span>
-                <span>{p.name}</span>
-              </span>
+              ))}
+            </div>
+
+            {Array.from({ length: cloneCount }).map((_, copyIndex) => (
+              <div
+                key={`clone-${copyIndex}`}
+                aria-hidden
+                className="seamless-marquee-segment gap-10 pr-10"
+              >
+                {tickerItems.map((item, index) => (
+                  <span
+                    key={`clone-${copyIndex}-${item.id}-${index}`}
+                    className="inline-flex items-center gap-1.5 px-2 py-1 text-[13px] leading-none font-medium whitespace-nowrap text-foreground/72"
+                  >
+                    <span className="flex size-4 shrink-0 items-center justify-center">
+                      <IconRenderer name={item.id} size={13} />
+                    </span>
+                    <span className="leading-none">{item.label}</span>
+                  </span>
+                ))}
+              </div>
             ))}
           </div>
         </div>
@@ -426,6 +536,29 @@ export default function HomePage() {
                   <Icon className="size-5" />
                 </div>
               </motion.div>
+            ))}
+          </div>
+        </section>
+
+        <section className="relative z-10 mx-auto max-w-6xl px-6 pb-14">
+          <div className="mb-8 flex flex-col gap-2">
+            <span className="font-mono text-[12px] font-semibold tracking-[.13em] text-primary uppercase">
+              FAQ
+            </span>
+            <h2 className="text-[clamp(26px,3.4vw,38px)] font-bold tracking-[-0.04em] text-foreground">
+              Quick answers before you start.
+            </h2>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-3">
+            {FAQ_ITEMS.map((item) => (
+              <div
+                key={item.q}
+                className="rounded-2xl border border-border/80 bg-card/80 p-5 shadow-sm backdrop-blur-sm"
+              >
+                <p className="text-sm font-semibold text-foreground">{item.q}</p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.a}</p>
+              </div>
             ))}
           </div>
         </section>
@@ -481,60 +614,28 @@ export default function HomePage() {
           </motion.div>
         </section>
 
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.35 }}
-          className="fixed right-5 bottom-5 z-[60]"
-        >
-          <HoverCard openDelay={120} closeDelay={120}>
-            <HoverCardTrigger asChild>
-              <button
-                type="button"
-                aria-label="Open support links"
-                className="inline-flex size-14 items-center justify-center rounded-full border border-primary/25 bg-card/95 text-primary shadow-[0_18px_45px_-20px_hsl(var(--foreground)/0.45)] backdrop-blur-md transition-all hover:-translate-y-1 hover:border-primary/45 hover:shadow-[0_22px_55px_-22px_hsl(var(--primary)/0.45)]"
-              >
-                <Heart className="size-5 fill-current" />
-              </button>
-            </HoverCardTrigger>
-            <HoverCardContent
-              align="end"
-              side="top"
-              sideOffset={14}
-              className="w-[290px] rounded-2xl border border-border/80 bg-card/95 p-3 shadow-[0_24px_60px_-26px_hsl(var(--foreground)/0.45)] backdrop-blur-xl"
-            >
-              <div className="flex flex-col gap-2">
-                <div className="px-1 pb-1">
-                  <p className="font-mono text-[11px] font-semibold tracking-[0.14em] text-primary uppercase">
-                    Support Chronex
-                  </p>
-                  <p className="mt-1 text-sm text-foreground/65">
-                    Pick a platform you like and help keep the project moving.
-                  </p>
-                </div>
-                {SUPPORT_LINKS.map(({ href, label, description, icon: Icon }) => (
-                  <a
-                    key={label}
-                    href={href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-3 rounded-xl border border-transparent px-3 py-3 transition-colors hover:border-primary/20 hover:bg-primary/6"
-                  >
-                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/12 text-primary">
-                      <Icon className="size-[18px]" />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block text-sm font-semibold text-foreground">{label}</span>
-                      <span className="block truncate text-xs text-foreground/55">
-                        {description}
-                      </span>
-                    </span>
-                  </a>
-                ))}
-              </div>
-            </HoverCardContent>
-          </HoverCard>
-        </motion.div>
+        <footer className="relative z-10 border-t border-border/70 bg-background/70">
+          <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-foreground">Publr</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Schedule across your approved channels with confidence.
+              </p>
+            </div>
+
+            <nav className="flex flex-wrap items-center gap-4 text-sm">
+              {LEGAL_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </footer>
       </main>
     </>
   )

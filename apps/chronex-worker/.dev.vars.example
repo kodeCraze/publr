@@ -1,7 +1,7 @@
 DATABASE_URL =NEON_CONNECTION_STRING
 DISCORD_BOT_TOKEN= YOUR_DISCORD_BOT_TOKEN_HERE
-DISCORD_WEBHOOK_NAME = "Chronex Bot"
-DISCORD_WEBHOOK_AVATAR_URL = "https://raw.githubusercontent.com/prncexe/chronex/main/apps/chronex-client/public/favicon.png"
+DISCORD_WEBHOOK_NAME = "Publr Bot"
+DISCORD_WEBHOOK_AVATAR_URL = "https://raw.githubusercontent.com/prncexe/publr/main/apps/publr-client/public/favicon.png"
 B2_KEY_ID= BACKBLAZE_KEY_ID
 B2_APP_KEY= BACKBLAZE_APP_KEY
 B2_BUCKET_ID= BACKBLAZE_BUCKET_ID

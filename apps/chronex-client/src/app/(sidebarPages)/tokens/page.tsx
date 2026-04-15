@@ -6,6 +6,7 @@ import type { PlatformId } from '@/config/platforms'
 import { redirect } from 'next/navigation'
 import { Spinner } from '@/components/ui/spinner'
 import { ShieldCheck } from 'lucide-react'
+import { isPlatformEnabled } from '@/lib/platformAvailability'
 
 const ALL_PLATFORMS: PlatformId[] = [
   'instagram',
@@ -15,11 +16,6 @@ const ALL_PLATFORMS: PlatformId[] = [
   'slack',
   'telegram',
 ]
-
-const platformBlacklist = (process.env.NEXT_PUBLIC_PLATFORM_BLACKLIST ?? '')
-  .split(',')
-  .map((platform) => platform.trim().toLowerCase())
-  .filter(Boolean)
 
 function formatExpiryDate(value: Date | string | null | undefined) {
   if (!value) return 'Does not expire'
@@ -66,21 +62,21 @@ export default function ConnectionsPage() {
 
   const connectedPlatforms = new Set(
     authTokens
-      .filter((token) => !platformBlacklist.includes(String(token.platform).toLowerCase()))
+      .filter((token) => isPlatformEnabled(token.platform as PlatformId))
       .filter((token) => token.platform !== 'telegram' || telegramChannelCount > 0)
       .map((token) => token.platform as PlatformId),
   )
   const pendingTelegram =
-    !platformBlacklist.includes('telegram') &&
+    isPlatformEnabled('telegram') &&
     authTokens.some((token) => (token.platform as PlatformId) === 'telegram') &&
     telegramChannelCount === 0
 
-  const connectedCount = ALL_PLATFORMS.filter((p) => connectedPlatforms.has(p)).length
+  const enabledPlatforms = ALL_PLATFORMS.filter((platform) => isPlatformEnabled(platform))
+  const connectedCount = enabledPlatforms.filter((platform) =>
+    connectedPlatforms.has(platform),
+  ).length
   const pendingCount = pendingTelegram ? 1 : 0
-  const availableCount =
-    ALL_PLATFORMS.filter((platform) => !platformBlacklist.includes(platform)).length -
-    connectedCount -
-    pendingCount
+  const availableCount = enabledPlatforms.length - connectedCount - pendingCount
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-8">
@@ -109,9 +105,9 @@ export default function ConnectionsPage() {
       </section>
 
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {ALL_PLATFORMS.map((platform) => {
+        {enabledPlatforms.map((platform) => {
           const token = authTokens.find((token) => (token.platform as PlatformId) === platform)
-          const isBlocked = platformBlacklist.includes(platform)
+          const isBlocked = !isPlatformEnabled(platform)
           const isVerified = connectedPlatforms.has(platform)
           const isPending = platform === 'telegram' && pendingTelegram
 

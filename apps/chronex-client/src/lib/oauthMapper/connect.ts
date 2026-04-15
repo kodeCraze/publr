@@ -1,4 +1,3 @@
-import { authClient } from '@/config/linkedinClient'
 import type { PlatformId } from '@/config/platforms'
 
 const getInstaAuthUrl = () => {
@@ -13,13 +12,26 @@ const getThreadsAuthUrl = () => {
 }
 
 const getLinkedinAuthUrl = () => {
-  const authUrl = authClient.generateMemberAuthorizationUrl([
-    'w_member_social',
-    'profile',
-    'email',
-    'openid',
-  ])
-  return authUrl
+  const clientId = process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID
+  const redirectUrl =
+    process.env.NEXT_PUBLIC_LINKEDIN_REDIRECT_URI || `${process.env.NEXT_PUBLIC_APP_URL}/linkedin`
+
+  if (!clientId || !redirectUrl) {
+    throw new Error(
+      'Missing LinkedIn OAuth configuration. Set NEXT_PUBLIC_LINKEDIN_CLIENT_ID and NEXT_PUBLIC_LINKEDIN_REDIRECT_URI.',
+    )
+  }
+
+  const state =
+    typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : Math.random().toString(36).slice(2)
+
+  const scopes = ['w_member_social', 'profile', 'email', 'openid']
+    .map(encodeURIComponent)
+    .join('%20')
+
+  return `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUrl)}&scope=${scopes}&state=${encodeURIComponent(state)}`
 }
 const getDiscordAuthUrl = () => {
   const origin = process.env.NEXT_PUBLIC_DISCORD_REDIRECT_URI

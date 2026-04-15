@@ -66,7 +66,7 @@ async function enqueueStatusCheck(
   containerId: string,
   childContainerIds?: string[],
 ) {
-  await env.CHRONEX_QUEUE_PRODUCER.send(
+  await env.PUBLR_QUEUE_PRODUCER.send(
     {
       ...payload,
       phase: 'check_status',

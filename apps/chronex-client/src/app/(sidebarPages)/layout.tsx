@@ -44,7 +44,7 @@ export default function SidebarLayout({
                 <SidebarTrigger className="-ml-1 cursor-pointer rounded-md border border-transparent transition-colors hover:border-border hover:bg-muted/60" />
                 {}
               </div>
-              <span className="chronex-brand text-xl font-semibold tracking-tight">
+              <span className="publr-brand text-xl font-semibold tracking-tight">
                 <BrandName />
               </span>
             </div>

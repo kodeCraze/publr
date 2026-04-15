@@ -1,6 +1,6 @@
 name: Feature request
-description: Suggest an improvement or new capability for Chronex
-title: "[Feature]: "
+description: Suggest an improvement or new capability for Publr
+title: '[Feature]: '
 labels:
   - enhancement
 body:
@@ -22,8 +22,8 @@ body:
     id: proposal
     attributes:
       label: Proposed solution
-      description: What would you like Chronex to do?
-      placeholder: I would like Chronex to...
+      description: What would you like Publr to do?
+      placeholder: I would like Publr to...
     validations:
       required: true
 

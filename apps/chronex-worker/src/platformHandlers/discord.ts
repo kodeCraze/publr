@@ -105,7 +105,7 @@ async function executeWebhookMultipart(
   jsonPayload: Record<string, unknown>,
   files: Array<{ name: string; mediaUrl: string }>,
 ): Promise<DiscordWebhookResponse> {
-  const boundary = `----ChronexBoundary${Date.now()}`
+  const boundary = `----PublrBoundary${Date.now()}`
   const encoder = new TextEncoder()
 
   const { readable, writable } = new TransformStream()

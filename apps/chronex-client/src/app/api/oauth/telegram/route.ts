@@ -29,7 +29,7 @@ function getWebhookSecret(token: string) {
   if (envSecret) return envSecret
 
   const sanitizedToken = token.replace(/[^a-zA-Z0-9_-]/g, '_')
-  return `chronex_${sanitizedToken.slice(0, 24)}`
+  return `publr_${sanitizedToken.slice(0, 24)}`
 }
 
 function getMessageText(message?: TelegramMessage) {
@@ -41,7 +41,7 @@ function extractRegistrationCode(text: string) {
   const connectMatch = normalized.match(/^\/connect(?:@\w+)?\s+([a-zA-Z0-9_-]+)/)
   if (connectMatch) return connectMatch[1] ?? null
 
-  const startMatch = normalized.match(/^\/start(?:@\w+)?\s+chronex[_-]([a-zA-Z0-9_-]+)/)
+  const startMatch = normalized.match(/^\/start(?:@\w+)?\s+publr[_-]([a-zA-Z0-9_-]+)/)
   if (startMatch) return startMatch[1] ?? null
 
   return null
@@ -108,14 +108,14 @@ export async function POST(request: Request) {
     })
 
     if (!tokenRecord) {
-      await sendTelegramMessage(chatId, 'Chronex could not match that workspace code.')
+      await sendTelegramMessage(chatId, 'Publr could not match that workspace code.')
       return NextResponse.json({ ok: true })
     }
 
     if (!isRegistrableChat(message.chat)) {
       await sendTelegramMessage(
         chatId,
-        `Finish setup from the Telegram channel or group you want to publish to. Private chats can't be connected as a Chronex destination.\n\nAdd this bot as an admin there, then send:\n/connect ${registrationCode}`,
+        `Finish setup from the Telegram channel or group you want to publish to. Private chats can't be connected as a Publr destination.\n\nAdd this bot as an admin there, then send:\n/connect ${registrationCode}`,
       )
       return NextResponse.json({ ok: true })
     }
@@ -130,7 +130,7 @@ export async function POST(request: Request) {
 
     await sendTelegramMessage(
       chatId,
-      `Connected this Telegram ${getChatLabel(message.chat)} to Chronex successfully: "${title}".`,
+      `Connected this Telegram ${getChatLabel(message.chat)} to Publr successfully: "${title}".`,
     )
     return NextResponse.json({ ok: true })
   }

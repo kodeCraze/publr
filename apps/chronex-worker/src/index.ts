@@ -16,7 +16,7 @@ export interface Env {
   ENVIRONMENT: string
   DATABASE_URL: string
   DISCORD_BOT_TOKEN: string
-  CHRONEX_QUEUE_PRODUCER: Queue
+  PUBLR_QUEUE_PRODUCER: Queue
   DISCORD_WEBHOOK_NAME: string
   DISCORD_WEBHOOK_AVATAR_URL: string
   B2_BUCKET_ID: string
@@ -182,7 +182,7 @@ export default {
         Math.floor((row.scheduledAt!.getTime() - now.getTime()) / 1000),
       )
 
-      await env.CHRONEX_QUEUE_PRODUCER.send(payload, { delaySeconds })
+      await env.PUBLR_QUEUE_PRODUCER.send(payload, { delaySeconds })
       await db
         .update(platformPosts)
         .set({ status: 'processing' })
@@ -197,7 +197,7 @@ export default {
     const url = new URL(request.url)
     if (url.pathname === '/test-job') {
       console.log('Sending test job to queue...')
-      await env.CHRONEX_QUEUE_PRODUCER.send({
+      await env.PUBLR_QUEUE_PRODUCER.send({
         postId: 123,
         platformPostId: 456,
       })

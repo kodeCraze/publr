@@ -365,7 +365,7 @@ export const getUserPostById = workspaceProcedure
                   if (isTokenFresh && mediaItem.downloadToken) {
                     return {
                       ...mediaItem,
-                      url: `${process.env.B2_DOWNLOAD_URL}/file/chronex/${mediaItem.name}?Authorization=${mediaItem.downloadToken}`,
+                      url: `${process.env.B2_DOWNLOAD_URL}/file/publr/${mediaItem.name}?Authorization=${mediaItem.downloadToken}`,
                     }
                   }
 
@@ -385,7 +385,7 @@ export const getUserPostById = workspaceProcedure
 
                   return {
                     ...mediaItem,
-                    url: `${process.env.B2_DOWNLOAD_URL}/file/chronex/${mediaItem.name}?Authorization=${data.data.authorizationToken}`,
+                    url: `${process.env.B2_DOWNLOAD_URL}/file/publr/${mediaItem.name}?Authorization=${data.data.authorizationToken}`,
                   }
                 }),
               )

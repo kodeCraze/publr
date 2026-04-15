@@ -16,7 +16,7 @@ function buildCachedMediaUrl(
 
   try {
     const baseUrl = new URL(rawBaseUrl).toString().replace(/\/$/, '')
-    return `${baseUrl}/file/chronex/${name}?Authorization=${encodeURIComponent(downloadToken)}`
+    return `${baseUrl}/file/publr/${name}?Authorization=${encodeURIComponent(downloadToken)}`
   } catch {
     return null
   }

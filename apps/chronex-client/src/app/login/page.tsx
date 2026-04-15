@@ -6,9 +6,9 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useTransition } from 'react'
 import { Spinner } from '@/components/ui/spinner'
 import { toast } from 'sonner'
-import { Github } from 'lucide-react'
 import { FaGoogle } from 'react-icons/fa'
 import { getErrorMessage } from '@/lib/client-errors'
+import Link from 'next/link'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -18,15 +18,15 @@ export default function LoginPage() {
   useEffect(() => {
     if (!isSessionPending && session?.user && !isLoginPending) {
       toast.warning('You are already logged in')
-      router.replace('/tokens')
+      router.replace('/home')
     }
   }, [session, isSessionPending, isLoginPending, router])
-  const handleLogin = (value: 'github' | 'google') => {
+  const handleLogin = (value: 'google') => {
     startTransition(async () => {
       try {
         await authClient.signIn.social({
           provider: value,
-          callbackURL: '/post',
+          callbackURL: '/home',
         })
       } catch (err) {
         console.error(err)
@@ -112,30 +112,6 @@ export default function LoginPage() {
           <div className="card-fade card-fade-4 flex flex-col gap-3">
             {}
             <Button
-              className="login-btn w-full cursor-pointer gap-2.5"
-              onClick={() => handleLogin('github')}
-              disabled={isLoginPending}
-            >
-              {isLoginPending ? (
-                <Spinner />
-              ) : (
-                <>
-                  <Github size={16} /> Continue with GitHub
-                </>
-              )}
-            </Button>
-
-            {}
-            <div className="flex items-center gap-3 py-0.5">
-              <div className="h-px flex-1 bg-border" />
-              <span className="text-[11px] tracking-widest text-muted-foreground/50 uppercase">
-                or
-              </span>
-              <div className="h-px flex-1 bg-border" />
-            </div>
-
-            {}
-            <Button
               variant="outline"
               className="login-btn w-full cursor-pointer gap-2.5"
               onClick={() => handleLogin('google')}
@@ -155,13 +131,19 @@ export default function LoginPage() {
         {}
         <p className="card-fade card-fade-5 mt-10 text-center text-xs text-muted-foreground/50">
           By signing in, you agree to our{' '}
-          <a href="#" className="text-primary/60 transition-colors hover:text-primary">
+          <Link
+            href="/terms-and-conditions"
+            className="text-primary/60 transition-colors hover:text-primary"
+          >
             Terms
-          </a>{' '}
+          </Link>{' '}
           and{' '}
-          <a href="#" className="text-primary/60 transition-colors hover:text-primary">
+          <Link
+            href="/privacy-policy"
+            className="text-primary/60 transition-colors hover:text-primary"
+          >
             Privacy Policy
-          </a>
+          </Link>
           .
         </p>
       </div>

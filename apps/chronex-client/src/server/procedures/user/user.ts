@@ -101,7 +101,7 @@ export const getMedia = workspaceProcedure.query(async ({ ctx }) => {
           console.log('Token is cached')
           return {
             ...m,
-            url: `${process.env.B2_DOWNLOAD_URL}/file/chronex/${m.name}?Authorization=${m.downloadToken}`,
+            url: `${process.env.B2_DOWNLOAD_URL}/file/publr/${m.name}?Authorization=${m.downloadToken}`,
           }
         }
         console.log("token ain't cached, generating new one")
@@ -119,7 +119,7 @@ export const getMedia = workspaceProcedure.query(async ({ ctx }) => {
           .where(eq(postMedia.id, m.id))
         return {
           ...m,
-          url: `${process.env.B2_DOWNLOAD_URL}/file/chronex/${m.name}?Authorization=${data.data.authorizationToken}`,
+          url: `${process.env.B2_DOWNLOAD_URL}/file/publr/${m.name}?Authorization=${data.data.authorizationToken}`,
         }
       }),
     )

@@ -24,9 +24,10 @@ import {
   Briefcase,
 } from 'lucide-react'
 import Workspace from './workspace'
+import { authClient } from '@/utils/authClient'
 
 const mainNavItems = [
-  { title: 'Home', url: '/', icon: Home },
+  { title: 'Home', url: '/home', icon: Home },
   { title: 'Scheduled Posts', url: '/post', icon: PenSquare },
   { title: 'Create Post', url: '/post/createPost', icon: PlusSquare },
   { title: 'Media Library', url: '/media', icon: ImageIcon },
@@ -34,13 +35,15 @@ const mainNavItems = [
   { title: 'Workspace', url: '/workspace', icon: Briefcase },
 ]
 
-const authNavItems = [
-  { title: 'Login', url: '/login', icon: LogIn },
-  { title: 'Sign Out', url: '/signout', icon: LogOut },
-]
-
 export function AppSidebar() {
   const pathname = usePathname()
+  const { data: session, isPending } = authClient.useSession()
+  const user = session?.user
+  const authNavItems = isPending
+    ? []
+    : user
+      ? [{ title: 'Sign Out', url: '/signout', icon: LogOut }]
+      : [{ title: 'Login', url: '/login', icon: LogIn }]
 
   const getBestActiveUrl = (urls: string[]) => {
     if (!pathname) return null
@@ -80,23 +83,25 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupLabel>Account</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {authNavItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={activeUrl === item.url}>
-                    <Link href={item.url}>
-                      <item.icon className="size-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {authNavItems.length > 0 ? (
+          <SidebarGroup>
+            <SidebarGroupLabel>Account</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {authNavItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={activeUrl === item.url}>
+                      <Link href={item.url}>
+                        <item.icon className="size-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : null}
       </SidebarContent>
       <SidebarFooter />
     </Sidebar>

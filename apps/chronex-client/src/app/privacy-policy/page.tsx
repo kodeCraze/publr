@@ -38,7 +38,7 @@ const policySections = [
     label: '01',
     title: 'Introduction',
     body: [
-      'Welcome to Chronex ("we," "us," "our," or the "Company"). We are committed to protecting your privacy and ensuring you have a positive experience on our platform. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our services.',
+      'Welcome to Publr ("we," "us," "our," or the "Company"). We are committed to protecting your privacy and ensuring you have a positive experience on our platform. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our services.',
       'Please read this Privacy Policy carefully. If you do not agree with our policies and practices, please do not use our services.',
     ],
   },
@@ -151,7 +151,7 @@ const policySections = [
       {
         heading: 'Revoke access',
         intro:
-          'You can disconnect any integrated social account from Chronex at any time. Revoking access may prevent us from continuing the related integration.',
+          'You can disconnect any integrated social account from Publr at any time. Revoking access may prevent us from continuing the related integration.',
       },
       {
         heading: 'Opt out',
@@ -179,7 +179,7 @@ const policySections = [
     label: '08',
     title: 'OAuth Permissions',
     body: [
-      'When you authorize Chronex to access your social media accounts, you grant us specific permissions. You can review and modify these permissions through your account settings or the privacy controls of the respective platform.',
+      'When you authorize Publr to access your social media accounts, you grant us specific permissions. You can review and modify these permissions through your account settings or the privacy controls of the respective platform.',
       'We only request the minimum permissions necessary to provide our services. We will never request permission to post on your behalf without explicit user action.',
     ],
   },
@@ -232,7 +232,7 @@ const policySections = [
     label: '14',
     title: 'Your Acknowledgment',
     body: [
-      'By using Chronex, you acknowledge that you have read and understood this Privacy Policy and agree to its terms. If you do not agree with our privacy practices, please do not use our services.',
+      'By using Publr, you acknowledge that you have read and understood this Privacy Policy and agree to its terms. If you do not agree with our privacy practices, please do not use our services.',
     ],
   },
 ]
@@ -264,7 +264,7 @@ export default function PrivacyPolicy() {
             <div className="flex items-center gap-3 text-[11px] tracking-[0.2em] text-foreground/45 uppercase">
               <span>Privacy</span>
               <span className="h-1 w-1 rounded-full bg-primary" />
-              <span>Chronex</span>
+              <span>Publr</span>
             </div>
           </div>
         </header>
@@ -292,8 +292,8 @@ export default function PrivacyPolicy() {
                     handling.
                   </h1>
                   <p className="mt-5 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
-                    This page explains what information Chronex collects, why it is needed, how it
-                    is protected, and what control you have over it. The goal is simple: make the
+                    This page explains what information Publr collects, why it is needed, how it is
+                    protected, and what control you have over it. The goal is simple: make the
                     policy readable without watering down the important details.
                   </p>
                 </div>
@@ -384,10 +384,10 @@ export default function PrivacyPolicy() {
                             Email
                           </div>
                           <a
-                            href="mailto:privacy@chronex.app"
+                            href="mailto:privacy@publr.app"
                             className="mt-2 block text-sm font-medium text-card-foreground hover:text-primary"
                           >
-                            privacy@chronex.app
+                            privacy@publr.app
                           </a>
                         </div>
                         <div className="rounded-[1.5rem] border border-border/60 bg-background/65 p-5">
@@ -462,7 +462,7 @@ export default function PrivacyPolicy() {
                 </p>
                 <p className="mt-3 text-sm leading-6 text-muted-foreground">
                   This policy covers website usage, account activity, connected platforms, cookies,
-                  and communication with Chronex.
+                  and communication with Publr.
                 </p>
               </div>
             </div>

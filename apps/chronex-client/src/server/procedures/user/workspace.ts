@@ -30,8 +30,8 @@ export const createWorkspaceProcedure = authProcedure
     ctx.cookies.set('workspaceId', String(newworkspace.id), {
       httpOnly: false,
       path: '/',
-      sameSite: 'none',
-      secure: true,
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      secure: process.env.NODE_ENV === 'production',
       expires: new Date('2035-01-01'),
     })
     return newworkspace

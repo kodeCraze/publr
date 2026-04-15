@@ -16,7 +16,7 @@ dead_letter_queue = "chronex-dlq" # Optional: for failed messages
 
 [[queues.producers]]
 queue = "chronex-platform-jobs"
-binding = "CHRONEX_QUEUE_PRODUCER"
+binding = "PUBLR_QUEUE_PRODUCER"
 
 [triggers]
 crons = ["0 */12 * * *"]

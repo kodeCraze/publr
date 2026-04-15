@@ -1,6 +1,8 @@
+# publr
+
 <div align="center">
 
-<h1>Chronex</h1>
+<h1>Publr</h1>
 
 <p>Multi-platform social media scheduling for creators and small teams.</p>
 
@@ -13,12 +15,12 @@
 </p>
 
 <p>
-  <a href="#how-chronex-works">How it works</a> ·
+  <a href="#how-publr-works">How it works</a> ·
   <a href="#installation">Installation</a> ·
   <a href="#supported-platforms">Platforms</a> ·
   <a href="#contributing">Contributing</a>
 </p>
-<img src="./docs/images/lightImage.png" alt="Chronex" width="100%" style="border-radius: 12px;" />
+<img src="./docs/images/lightImage.png" alt="Publr" width="100%" style="border-radius: 12px;" />
 
 </div>
 
@@ -26,11 +28,11 @@
 
 ## What's Inside
 
-| Package               | Description                                                                        |
-| --------------------- | ---------------------------------------------------------------------------------- |
-| `apps/chronex-client` | Next.js 16 app — auth, tRPC, media upload, workspace UI, platform connection flows |
-| `apps/chronex-worker` | Cloudflare Worker — consumes queue jobs, publishes content, updates post status    |
-| `packages/db`         | Shared Drizzle schema and Neon/Postgres client                                     |
+| Package             | Description                                                                        |
+| ------------------- | ---------------------------------------------------------------------------------- |
+| `apps/publr-client` | Next.js 16 app — auth, tRPC, media upload, workspace UI, platform connection flows |
+| `apps/publr-worker` | Cloudflare Worker — consumes queue jobs, publishes content, updates post status    |
+| `packages/db`       | Shared Drizzle schema and Neon/Postgres client                                     |
 
 ## Supported Platforms
 
@@ -47,7 +49,7 @@
   </tr>
 </table>
 
-## How Chronex Works
+## How Publr Works
 
 ```
 User signs in → creates workspace
@@ -79,20 +81,20 @@ Worker consumes messages → dispatches correct platform handler
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/prncexe/chronex.git
-cd chronex
+git clone https://github.com/prncexe/publr.git
+cd publr
 pnpm install
 ```
 
 ### 2. Set up environment files
 
-Chronex uses three separate env surfaces:
+Publr uses three separate env surfaces:
 
 <details>
-<summary><b>A. Client env</b> — <code>apps/chronex-client/.env</code></summary>
+<summary><b>A. Client env</b> — <code>apps/publr-client/.env</code></summary>
 
 ```bash
-cp apps/chronex-client/.env.example apps/chronex-client/.env
+cp apps/publr-client/.env.example apps/publr-client/.env
 ```
 
 Key groups to fill in:
@@ -109,10 +111,10 @@ Key groups to fill in:
 </details>
 
 <details>
-<summary><b>B. Worker env</b> — <code>apps/chronex-worker/.dev.vars</code></summary>
+<summary><b>B. Worker env</b> — <code>apps/publr-worker/.dev.vars</code></summary>
 
 ```bash
-cp apps/chronex-worker/.dev.vars.example apps/chronex-worker/.dev.vars
+cp apps/publr-worker/.dev.vars.example apps/publr-worker/.dev.vars
 ```
 
 Required locally:
@@ -238,7 +240,7 @@ Create both queues in Cloudflare:
 
 The worker expects:
 
-- Producer binding: `CHRONEX_QUEUE_PRODUCER`
+- Producer binding: `PUBLR_QUEUE_PRODUCER`
 - Consumer queue: `chronex-platform-jobs`
 - Dead letter queue: `chronex-dlq`
 - Cron trigger: every 12 hours

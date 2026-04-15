@@ -22,7 +22,7 @@ export default async function TelegramConnectPage() {
     return <div>Telegram connection failed. Please try again.</div>
   }
 
-  const addBotToGroupUrl = `https://t.me/${botUsername}?startgroup=chronex_${registrationCode}`
+  const addBotToGroupUrl = `https://t.me/${botUsername}?startgroup=publr_${registrationCode}`
   const addBotToChannelUrl = `https://t.me/${botUsername}?startchannel&admin=post_messages`
 
   return (
@@ -63,7 +63,7 @@ export default async function TelegramConnectPage() {
           Add bot to channel
         </Link>
       </div>
-      <p>Refresh Chronex after the bot confirms.</p>
+      <p>Refresh Publr after the bot confirms.</p>
     </main>
   )
 }

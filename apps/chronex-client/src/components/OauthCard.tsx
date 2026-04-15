@@ -199,7 +199,7 @@ const OauthCard = ({
                 Ready to connect
               </p>
               <p className="text-sm text-muted-foreground">
-                Authorize this platform to let Chronex publish through your workspace.
+                Authorize this platform to let Publr publish through your workspace.
               </p>
             </div>
           )}

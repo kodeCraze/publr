@@ -6,27 +6,27 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { jetBrainsMono } from '@/lib/fonts'
 import { Analytics } from '@vercel/analytics/next'
 export const metadata: Metadata = {
-  metadataBase: new URL('https://chronex.princecodes.tech'),
-  title: 'Chronex',
+  metadataBase: new URL('https://publr.princecodes.tech'),
+  title: 'Publr',
   description: 'A unified platform to schedule and manage your content across all platforms.',
   openGraph: {
     type: 'website',
-    siteName: 'Chronex',
-    title: 'Chronex',
+    siteName: 'Publr',
+    title: 'Publr',
     description: 'Schedule and manage your content across all platforms.',
-    url: 'https://chronex.princecodes.tech',
+    url: 'https://publr.princecodes.tech',
     images: [
       {
         url: '/image.png', // serve from /public
         width: 1200,
         height: 630,
-        alt: 'Chronex – Social Media Scheduler',
+        alt: 'Publr – Social Media Scheduler',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Chronex',
+    title: 'Publr',
     description: 'Schedule and manage your content across all platforms.',
     images: ['/image.png'],
     site: '@prncexe',

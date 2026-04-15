@@ -24,7 +24,7 @@ function getWebhookSecret(token: string) {
   if (envSecret) return envSecret
 
   const sanitizedToken = token.replace(/[^a-zA-Z0-9_-]/g, '_')
-  return `chronex_${sanitizedToken.slice(0, 24)}`
+  return `publr_${sanitizedToken.slice(0, 24)}`
 }
 
 export const telegramOAuthProcedure = workspaceProcedure.mutation(async ({ ctx }) => {
@@ -48,22 +48,40 @@ export const telegramOAuthProcedure = workspaceProcedure.mutation(async ({ ctx }
   const webhookUrl = `${appUrl.replace(/\/$/, '')}/api/oauth/telegram`
   const secretToken = getWebhookSecret(botToken)
 
-  const webhookRes = await fetch(`https://api.telegram.org/bot${botToken}/setWebhook`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      url: webhookUrl,
-      secret_token: secretToken,
-      allowed_updates: ['message', 'channel_post', 'edited_channel_post', 'my_chat_member'],
-    }),
-  })
-  const webhookData = (await webhookRes.json()) as TelegramWebhookInfo
+  const webhookInfoRes = await fetch(`https://api.telegram.org/bot${botToken}/getWebhookInfo`)
+  const currentWebhookData = (await webhookInfoRes.json()) as {
+    ok: boolean
+    result?: { url: string }
+  }
 
-  if (!webhookRes.ok || !webhookData.ok) {
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: webhookData.description ?? 'Failed to register Telegram webhook',
+  const needsUpdate = !currentWebhookData.ok || currentWebhookData.result?.url !== webhookUrl
+
+  if (needsUpdate) {
+    if (!webhookUrl.startsWith('https://')) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message:
+          'Telegram requires an HTTPS URL for webhooks. If developing locally, use a tool like ngrok and set NEXT_PUBLIC_APP_URL.',
+      })
+    }
+
+    const webhookRes = await fetch(`https://api.telegram.org/bot${botToken}/setWebhook`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        url: webhookUrl,
+        secret_token: secretToken,
+        allowed_updates: ['message', 'channel_post', 'edited_channel_post', 'my_chat_member'],
+      }),
     })
+    const webhookData = (await webhookRes.json()) as TelegramWebhookInfo
+
+    if (!webhookRes.ok || !webhookData.ok) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: webhookData.description ?? 'Failed to register Telegram webhook',
+      })
+    }
   }
 
   const meRes = await fetch(`https://api.telegram.org/bot${botToken}/getMe`)

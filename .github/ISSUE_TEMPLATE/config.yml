@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Chronex contribution guide
-    url: https://github.com/prncexe/chronex/blob/main/CONTRIBUTING.md
+  - name: Publr contribution guide
+    url: https://github.com/prncexe/publr/blob/main/CONTRIBUTING.md
     about: Read the contributing guide before opening a pull request.
-  - name: Chronex setup guide
-    url: https://github.com/prncexe/chronex/blob/main/README.md
+  - name: Publr setup guide
+    url: https://github.com/prncexe/publr/blob/main/README.md
     about: Review setup, env, queue, worker, and Backblaze instructions.

@@ -15,10 +15,23 @@ export async function proxy(request: NextRequest) {
   }
 
   if (!user) return NextResponse.redirect(new URL('/login', request.url))
+
+  // Allow landing on /home immediately after login; the client will initialize workspaceId.
+  if (pathname === '/home' || pathname.startsWith('/home/')) {
+    return NextResponse.next()
+  }
+
   if (!workspaceId) return NextResponse.redirect(new URL('/workspace', request.url))
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: ['/workspace/:path*', '/post/createPost'],
+  matcher: [
+    '/home/:path*',
+    '/workspace/:path*',
+    '/post/:path*',
+    '/tokens/:path*',
+    '/media/:path*',
+    '/profile/:path*',
+  ],
 }

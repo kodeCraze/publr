@@ -1,10 +1,10 @@
 {
   "accountId": "YOUR_ACCOUNT_ID",
   "bucketId": "YOUR_BUCKET_ID",
-  "bucketName": "chronex",
+  "bucketName": "publr",
   "corsRules": [
     {
-      "corsRuleName": "chronex-local-and-prod",
+      "corsRuleName": "publr-local-and-prod",
       "allowedOrigins": ["http://localhost:3000", "https://your-app-domain.com"],
       "allowedHeaders": [
         "authorization",

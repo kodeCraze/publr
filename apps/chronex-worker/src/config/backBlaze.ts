@@ -107,7 +107,7 @@ function buildAuthorizedDownloadUrl(
   env: Pick<Env, 'B2_DOWNLOAD_URL'>,
 ) {
   const { downloadUrl } = getValidatedB2BaseUrls(env)
-  return `${downloadUrl}/file/chronex/${fileName}?Authorization=${encodeURIComponent(downloadToken)}`
+  return `${downloadUrl}/file/publr/${fileName}?Authorization=${encodeURIComponent(downloadToken)}`
 }
 
 async function getBackblazeDownloadAuthorization(bucketId: string, fileName: string) {

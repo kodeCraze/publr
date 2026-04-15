@@ -1,6 +1,6 @@
-# Contributing To Chronex
+# Contributing To Publr
 
-Thanks for helping improve Chronex.
+Thanks for helping improve Publr.
 
 ## Development Workflow
 
@@ -41,8 +41,8 @@ Thanks for helping improve Chronex.
 ## Coding Notes
 
 - The repo is a `pnpm` workspace
-- `apps/chronex-client` is the Next.js app
-- `apps/chronex-worker` is the Cloudflare Worker
+- `apps/publr-client` is the Next.js app
+- `apps/publr-worker` is the Cloudflare Worker
 - `packages/db` holds the shared Drizzle schema
 
 ## Questions

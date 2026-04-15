@@ -14,6 +14,7 @@ import { PostDetailsCard } from './components/post-details-card'
 import type { PlatformFormData } from './types'
 import { getErrorMessage } from '@/lib/client-errors'
 import { CLIENT_LIMITS } from '@/lib/client-limits'
+import { isPlatformEnabled } from '@/lib/platformAvailability'
 import {
   buildPlatformDataPayload,
   combineDateAndTime,
@@ -21,11 +22,6 @@ import {
   isPlatformReady,
   validateCreatePostForm,
 } from './utils'
-
-const platformBlacklist = (process.env.NEXT_PUBLIC_PLATFORM_BLACKLIST ?? '')
-  .split(',')
-  .map((platform) => platform.trim().toLowerCase())
-  .filter(Boolean)
 
 export default function CreatePostForm() {
   const utils = trpc.useUtils()
@@ -72,7 +68,7 @@ export default function CreatePostForm() {
     if (!userData?.authTokens) return new Set<string>()
     return new Set(
       userData.authTokens
-        .filter((token) => !platformBlacklist.includes(String(token.platform).toLowerCase()))
+        .filter((token) => isPlatformEnabled(token.platform as PlatformId))
         .filter(
           (token) => token.platform !== 'telegram' || (userData.telegramChannelCount ?? 0) > 0,
         )
