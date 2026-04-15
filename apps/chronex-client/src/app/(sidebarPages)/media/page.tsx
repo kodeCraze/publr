@@ -81,6 +81,8 @@ function PreviewModal({ item, onClose }: { item: MediaItem; onClose: () => void 
     return () => window.removeEventListener('keydown', handler)
   }, [onClose])
 
+  const [imgError, setImgError] = React.useState(false)
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm">
       <Card className="w-full max-w-5xl">
@@ -104,9 +106,21 @@ function PreviewModal({ item, onClose }: { item: MediaItem; onClose: () => void 
                 autoPlay
                 className="max-h-[72vh] w-full object-contain"
               />
+            ) : imgError ? (
+              <div className="flex h-[72vh] w-full flex-col items-center justify-center gap-3 text-muted-foreground">
+                <ImageIcon className="size-16 opacity-40" />
+                <span className="text-sm opacity-60">Image could not be loaded</span>
+              </div>
             ) : (
               <div className="relative h-[72vh] w-full">
-                <Image src={item.url} alt={item.name} fill unoptimized className="object-contain" />
+                <Image
+                  src={item.url}
+                  alt={item.name}
+                  fill
+                  unoptimized
+                  className="object-contain"
+                  onError={() => setImgError(true)}
+                />
               </div>
             )}
           </div>
@@ -126,6 +140,7 @@ function PreviewModal({ item, onClose }: { item: MediaItem; onClose: () => void 
 
 function MediaCard({ item, onPreview }: { item: MediaItem; onPreview: (item: MediaItem) => void }) {
   const isVideo = item.type === 'video'
+  const [imgError, setImgError] = React.useState(false)
 
   return (
     <Card
@@ -143,6 +158,11 @@ function MediaCard({ item, onPreview }: { item: MediaItem; onPreview: (item: Med
                 </div>
               </div>
             </>
+          ) : imgError ? (
+            <div className="flex size-full flex-col items-center justify-center gap-2 text-muted-foreground">
+              <ImageIcon className="size-8 opacity-40" />
+              <span className="text-xs opacity-60">Failed to load</span>
+            </div>
           ) : (
             <Image
               src={item.url}
@@ -151,6 +171,7 @@ function MediaCard({ item, onPreview }: { item: MediaItem; onPreview: (item: Med
               unoptimized
               className="object-cover"
               sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 20vw"
+              onError={() => setImgError(true)}
             />
           )}
 
@@ -173,6 +194,7 @@ function MediaCard({ item, onPreview }: { item: MediaItem; onPreview: (item: Med
 
 function MediaRow({ item, onPreview }: { item: MediaItem; onPreview: (item: MediaItem) => void }) {
   const isVideo = item.type === 'video'
+  const [imgError, setImgError] = React.useState(false)
 
   return (
     <Card className="transition-colors hover:border-border/80 hover:bg-muted/20">
@@ -189,6 +211,10 @@ function MediaRow({ item, onPreview }: { item: MediaItem; onPreview: (item: Medi
                 <Play className="text-white" fill="currentColor" />
               </div>
             </>
+          ) : imgError ? (
+            <div className="flex size-full items-center justify-center text-muted-foreground">
+              <ImageIcon className="size-6 opacity-40" />
+            </div>
           ) : (
             <Image
               src={item.url}
@@ -197,6 +223,7 @@ function MediaRow({ item, onPreview }: { item: MediaItem; onPreview: (item: Medi
               unoptimized
               className="object-cover"
               sizes="64px"
+              onError={() => setImgError(true)}
             />
           )}
         </button>

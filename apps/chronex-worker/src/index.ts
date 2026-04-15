@@ -21,6 +21,9 @@ export interface Env {
   DISCORD_WEBHOOK_AVATAR_URL: string
   B2_BUCKET_ID: string
   B2_DOWNLOAD_URL: string
+  B2_BUCKET_NAME: string
+  B2_KEY_ID: string
+  B2_APP_KEY: string
 }
 
 import {

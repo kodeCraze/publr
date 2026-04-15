@@ -2,6 +2,7 @@ import { workspaceProcedure } from '@/server/trpc'
 import { TRPCError } from '@trpc/server'
 import { b2 } from '@/config/backBlaze'
 import { postMedia, eq } from '@repo/db'
+import { buildB2SignedUrl } from '@/lib/b2-utils'
 
 type TelegramBotInfo = {
   ok: boolean
@@ -101,7 +102,7 @@ export const getMedia = workspaceProcedure.query(async ({ ctx }) => {
           console.log('Token is cached')
           return {
             ...m,
-            url: `${process.env.B2_DOWNLOAD_URL}/file/publr/${m.name}?Authorization=${m.downloadToken}`,
+            url: buildB2SignedUrl(m.name, m.downloadToken ?? ''),
           }
         }
         console.log("token ain't cached, generating new one")
@@ -119,7 +120,7 @@ export const getMedia = workspaceProcedure.query(async ({ ctx }) => {
           .where(eq(postMedia.id, m.id))
         return {
           ...m,
-          url: `${process.env.B2_DOWNLOAD_URL}/file/publr/${m.name}?Authorization=${data.data.authorizationToken}`,
+          url: buildB2SignedUrl(m.name, data.data.authorizationToken),
         }
       }),
     )

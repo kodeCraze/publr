@@ -1,11 +1,6 @@
 import { Buffer } from 'node:buffer'
 import type { Env } from '../index'
 
-const BACKBLAZE_CREDENTIALS = {
-  applicationKeyId: 'ffbf175d7c5c',
-  applicationKey: '005caf7f5180b9afe72ee36a1d1d9df8d2eec61504',
-}
-
 interface B2AuthResponse {
   authorizationToken: string
   apiUrl: string
@@ -22,7 +17,11 @@ interface B2DownloadAuthResponse {
   authorizationToken: string
 }
 
-function getValidatedB2BaseUrls(env: Pick<Env, 'B2_DOWNLOAD_URL'>) {
+type B2Credentials = Pick<Env, 'B2_KEY_ID' | 'B2_APP_KEY'>
+type B2DownloadEnv = Pick<Env, 'B2_DOWNLOAD_URL' | 'B2_BUCKET_NAME'>
+type FullB2Env = B2Credentials & B2DownloadEnv
+
+function getValidatedB2BaseUrls(env: B2DownloadEnv) {
   const rawDownloadUrl = env.B2_DOWNLOAD_URL
 
   if (!rawDownloadUrl) {
@@ -37,10 +36,11 @@ function getValidatedB2BaseUrls(env: Pick<Env, 'B2_DOWNLOAD_URL'>) {
   }
 }
 
-async function authorizeB2Account(): Promise<B2AuthResponse> {
-  const credentials = Buffer.from(
-    `${BACKBLAZE_CREDENTIALS.applicationKeyId}:${BACKBLAZE_CREDENTIALS.applicationKey}`,
-  ).toString('base64')
+async function authorizeB2Account(env: B2Credentials): Promise<B2AuthResponse> {
+  if (!env.B2_KEY_ID) throw new Error('B2_KEY_ID is not configured')
+  if (!env.B2_APP_KEY) throw new Error('B2_APP_KEY is not configured')
+
+  const credentials = Buffer.from(`${env.B2_KEY_ID}:${env.B2_APP_KEY}`).toString('base64')
 
   const response = await fetch('https://api.backblazeb2.com/b2api/v3/b2_authorize_account', {
     method: 'GET',
@@ -58,7 +58,7 @@ async function authorizeB2Account(): Promise<B2AuthResponse> {
 
 async function getDownloadAuthorization(
   authToken: string,
-  apiUrl: any,
+  apiUrl: string,
   bucketId: string,
   fileNamePrefix: string,
   validDurationSeconds = 3600,
@@ -81,6 +81,7 @@ async function getDownloadAuthorization(
   }
   return response.json()
 }
+
 async function getFileInfo(
   authToken: string,
   apiUrl: string,
@@ -101,17 +102,18 @@ async function getFileInfo(
   return response.json() as Promise<{ fileName: string; bucketId: string }>
 }
 
-function buildAuthorizedDownloadUrl(
-  fileName: string,
-  downloadToken: string,
-  env: Pick<Env, 'B2_DOWNLOAD_URL'>,
-) {
+function buildAuthorizedDownloadUrl(fileName: string, downloadToken: string, env: B2DownloadEnv) {
   const { downloadUrl } = getValidatedB2BaseUrls(env)
-  return `${downloadUrl}/file/publr/${fileName}?Authorization=${encodeURIComponent(downloadToken)}`
+  const bucketName = env.B2_BUCKET_NAME ?? 'publr'
+  return `${downloadUrl}/file/${bucketName}/${fileName}?Authorization=${encodeURIComponent(downloadToken)}`
 }
 
-async function getBackblazeDownloadAuthorization(bucketId: string, fileName: string) {
-  const authData = await authorizeB2Account()
+async function getBackblazeDownloadAuthorization(
+  bucketId: string,
+  fileName: string,
+  env: B2Credentials,
+): Promise<string> {
+  const authData = await authorizeB2Account(env)
   const { authorizationToken, apiInfo } = authData
   const apiUrl = apiInfo.storageApi.apiUrl
 
@@ -128,10 +130,10 @@ async function getBackblazeDownloadAuthorization(bucketId: string, fileName: str
 export async function getBackblazeSignedUrlForFileName(
   fileName: string,
   bucketId: string,
-  env: Pick<Env, 'B2_DOWNLOAD_URL'>,
+  env: FullB2Env,
 ): Promise<{ url: string; downloadToken: string }> {
   try {
-    const downloadToken = await getBackblazeDownloadAuthorization(bucketId, fileName)
+    const downloadToken = await getBackblazeDownloadAuthorization(bucketId, fileName, env)
     return {
       url: buildAuthorizedDownloadUrl(fileName, downloadToken, env),
       downloadToken,
@@ -168,10 +170,10 @@ function extractBackblazeFileName(rawUrl: string): string | null {
 export async function getBackblazeSignedUrl(
   rawUrl: string,
   bucketId: string,
-  env: Pick<Env, 'B2_DOWNLOAD_URL'>,
+  env: FullB2Env,
 ): Promise<{ url: string; downloadToken: string }> {
   try {
-    const authData = await authorizeB2Account()
+    const authData = await authorizeB2Account(env)
     const { authorizationToken, apiInfo } = authData
     const apiUrl = apiInfo.storageApi.apiUrl
     let fileName = extractBackblazeFileName(rawUrl)

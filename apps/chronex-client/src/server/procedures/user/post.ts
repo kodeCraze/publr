@@ -10,29 +10,9 @@ import { getMetaData } from '@/utils/fileFetch'
 import { validateMediaForPlatform } from '@/lib/media-validation/validator'
 import { queuePlatformJob } from '@/config/cloudflareQueue'
 import { and, count, eq } from 'drizzle-orm'
+import { buildB2SignedUrl, getValidatedB2DownloadUrl } from '@/lib/b2-utils'
 function gcd(a: number, b: number): number {
   return b === 0 ? a : gcd(b, a % b)
-}
-
-function getValidatedB2DownloadUrl(): string {
-  const rawBaseUrl = process.env.B2_DOWNLOAD_URL
-
-  if (!rawBaseUrl) {
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: 'B2_DOWNLOAD_URL is not configured',
-    })
-  }
-
-  try {
-    const normalized = new URL(rawBaseUrl)
-    return normalized.toString().replace(/\/$/, '')
-  } catch {
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: `B2_DOWNLOAD_URL is invalid: ${rawBaseUrl}`,
-    })
-  }
 }
 
 export const getUploadUrl = workspaceProcedure.query(async ({ ctx }) => {
@@ -365,7 +345,7 @@ export const getUserPostById = workspaceProcedure
                   if (isTokenFresh && mediaItem.downloadToken) {
                     return {
                       ...mediaItem,
-                      url: `${process.env.B2_DOWNLOAD_URL}/file/publr/${mediaItem.name}?Authorization=${mediaItem.downloadToken}`,
+                      url: buildB2SignedUrl(mediaItem.name, mediaItem.downloadToken!),
                     }
                   }
 
@@ -385,7 +365,7 @@ export const getUserPostById = workspaceProcedure
 
                   return {
                     ...mediaItem,
-                    url: `${process.env.B2_DOWNLOAD_URL}/file/publr/${mediaItem.name}?Authorization=${data.data.authorizationToken}`,
+                    url: buildB2SignedUrl(mediaItem.name, data.data.authorizationToken),
                   }
                 }),
               )

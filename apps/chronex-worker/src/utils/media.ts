@@ -6,7 +6,7 @@ import type { Env } from '../index'
 function buildCachedMediaUrl(
   name: string,
   downloadToken: string,
-  env: Pick<Env, 'B2_DOWNLOAD_URL'>,
+  env: Pick<Env, 'B2_DOWNLOAD_URL' | 'B2_BUCKET_NAME'>,
 ) {
   const rawBaseUrl = env.B2_DOWNLOAD_URL
 
@@ -16,7 +16,8 @@ function buildCachedMediaUrl(
 
   try {
     const baseUrl = new URL(rawBaseUrl).toString().replace(/\/$/, '')
-    return `${baseUrl}/file/publr/${name}?Authorization=${encodeURIComponent(downloadToken)}`
+    const bucketName = env.B2_BUCKET_NAME ?? 'publr'
+    return `${baseUrl}/file/${bucketName}/${name}?Authorization=${encodeURIComponent(downloadToken)}`
   } catch {
     return null
   }
@@ -25,7 +26,10 @@ function buildCachedMediaUrl(
 export async function fetchMedia(
   db: DB,
   fileId: number,
-  env: Pick<Env, 'B2_BUCKET_ID' | 'B2_DOWNLOAD_URL'>,
+  env: Pick<
+    Env,
+    'B2_BUCKET_ID' | 'B2_DOWNLOAD_URL' | 'B2_BUCKET_NAME' | 'B2_KEY_ID' | 'B2_APP_KEY'
+  >,
 ) {
   const media = await db.query.postMedia.findFirst({
     where: (m, { eq }) => eq(m.id, fileId),
@@ -87,7 +91,10 @@ export async function fetchMedia(
 export async function fetchMediaMany(
   db: DB,
   fileIds: number[],
-  env: Pick<Env, 'B2_BUCKET_ID' | 'B2_DOWNLOAD_URL'>,
+  env: Pick<
+    Env,
+    'B2_BUCKET_ID' | 'B2_DOWNLOAD_URL' | 'B2_BUCKET_NAME' | 'B2_KEY_ID' | 'B2_APP_KEY'
+  >,
 ) {
   const mediaItems = await Promise.all(fileIds.map((id) => fetchMedia(db, id, env)))
   return mediaItems
