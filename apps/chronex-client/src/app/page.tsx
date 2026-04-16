@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { ArrowRight, CalendarClock, Layers3, ShieldCheck, ArrowUpRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BrandName } from '@/components/logo/brandName'
+import { BetaBadge } from '@/components/BetaBadge'
 import { ThemeToggle } from '@/components/themeToggle'
 import IconRenderer from '@/lib/logoMapping'
 import { PlatformId } from '@/config/platforms'
@@ -230,9 +231,12 @@ export default function HomePage() {
         <header className="sticky top-0 left-0 z-50 border-b border-border/80 bg-background/85 backdrop-blur-md">
           <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-10">
             <div className="flex items-center justify-between gap-3">
-              <Link href="/" className="brand-wrap shrink-0">
-                <BrandName />
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link href="/" className="brand-wrap shrink-0">
+                  <BrandName />
+                </Link>
+                <BetaBadge />
+              </div>
 
               <div className="flex items-center gap-2 sm:hidden">
                 <a

@@ -6,6 +6,7 @@ import { AppSidebar } from '@/components/appSidebar'
 import { authClient } from '@/utils/authClient'
 import { Spinner } from '@/components/ui/spinner'
 import { BrandName } from '@/components/logo/brandName'
+import { BetaBadge } from '@/components/BetaBadge'
 import { ThemeToggle } from '@/components/themeToggle'
 import { UserMenu } from '@/components/userMenu'
 
@@ -47,6 +48,7 @@ export default function SidebarLayout({
               <span className="publr-brand text-xl font-semibold tracking-tight">
                 <BrandName />
               </span>
+              <BetaBadge />
             </div>
 
             <div className="flex items-center gap-3">
