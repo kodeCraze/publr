@@ -119,16 +119,16 @@ const TRUST_ITEMS = ['Per-platform customization', 'Queue + retries', 'OAuth tok
 
 const FAQ_ITEMS = [
   {
-    q: 'How long does onboarding take?',
-    a: 'Most teams connect their channels and schedule the first post in under 10 minutes.',
+    q: 'How quickly can I start publishing?',
+    a: 'Start in under 10 minutes. Connect your channels, schedule your first post, and move from planning to publishing without a complicated setup.',
   },
   {
-    q: 'Can I control each platform separately?',
-    a: 'Yes. You can customize content per platform while managing one shared campaign timeline.',
+    q: 'Can I tailor content for each channel?',
+    a: 'Yes. Customize copy, media, and timing for every destination while managing one shared campaign workflow. Keep your brand consistent while speaking to each audience correctly.',
   },
   {
-    q: 'Can I disable specific platforms?',
-    a: 'Yes. You can hide providers from the UI using your platform blacklist environment setting.',
+    q: 'Why use Publr instead of multiple tools?',
+    a: 'Publr replaces fragmented workflows with one unified publishing hub. Save time, reduce risk, and launch cross-channel campaigns with a single source of truth.',
   },
 ]
 
@@ -550,7 +550,7 @@ export default function HomePage() {
               FAQ
             </span>
             <h2 className="text-[clamp(26px,3.4vw,38px)] font-bold tracking-[-0.04em] text-foreground">
-              Quick answers before you start.
+              Frequently Asked Questions
             </h2>
           </div>
 
